@@ -1,0 +1,306 @@
+// Masters Green color scheme
+$masters-green: #1f5a3d;
+$masters-light: #2d7a52;
+$border-color: #d0d0d0;
+$focus-color: #d4af37;
+
+form {
+  max-width: 500px;
+  margin: 30px 0;
+
+  > div {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  input[type='text'],
+  input[type='number'],
+  select {
+    padding: 12px 15px;
+    font-size: 14px;
+    border: 2px solid $border-color;
+    border-radius: 4px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $masters-green;
+      box-shadow: 0 0 0 3px rgba(31, 90, 61, 0.1);
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  button {
+    align-self: flex-start;
+    background-color: $masters-green;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+
+    &:hover:not(:disabled) {
+      background-color: $masters-light;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(31, 90, 61, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &.save-button {
+      background-color: #28a745;
+
+      &:hover:not(:disabled) {
+        background-color: #218838;
+      }
+    }
+  }
+}
+
+h3 {
+  color: $masters-green;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+h4 {
+  color: $masters-green;
+  margin: 15px 0 10px 0;
+  font-size: 16px;
+}
+
+table {
+  width: 100%;
+  max-width: 900px;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 14px;
+  border: 2px solid $border-color;
+  border-radius: 6px;
+  overflow: hidden;
+
+  thead {
+    background-color: $masters-green;
+    color: white;
+    font-weight: 600;
+    th { padding: 15px; text-align: left; border-right: 1px solid rgba(255, 255, 255, 0.2); }
+  }
+
+  tbody {
+    tr { border-bottom: 1px solid $border-color; }
+    tr:hover:not(.rounds-row) { background-color: #f5f5f5; }
+    tr.rounds-row { background-color: #fafafa; border-bottom: 2px solid $border-color; }
+    td { padding: 12px 15px; border-right: 1px solid $border-color; }
+    select,
+    input[type='text'],
+    input[type='number'] {
+      padding: 8px 10px;
+      font-size: 13px;
+      border: 2px solid $border-color;
+      border-radius: 4px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      width: 100%;
+      min-width: 120px;
+
+      &:focus {
+        outline: none;
+        border-color: $masters-green;
+        box-shadow: 0 0 0 3px rgba(31, 90, 61, 0.1);
+      }
+
+      &:disabled {
+        background-color: #f0f0f0;
+        color: #999;
+        cursor: not-allowed;
+      }
+    }
+    button {
+      background-color: $masters-green;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-right: 8px;
+      margin-top: 0;
+      align-self: baseline;
+
+      &:hover:not(:disabled) {
+        background-color: $masters-light;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(31, 90, 61, 0.2);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+    span {
+      display: inline-block;
+      margin-right: 8px;
+      font-weight: 500;
+      color: #333;
+
+      &.tee-time-locked {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #f5c6cb;
+      }
+    }
+
+    a {
+      color: $masters-green;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
+
+      &:hover {
+        color: $masters-light;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.rounds-container {
+  padding: 15px;
+
+  .rounds-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 13px;
+    border: 1px solid $border-color;
+    min-width: 1000px;
+    overflow-x: auto;
+
+    thead {
+      background-color: lighten($masters-green, 10%);
+      th { padding: 10px; text-align: left; }
+    }
+
+    tbody tr {
+      border-bottom: 1px solid $border-color;
+      &:hover { background-color: #f5f5f5; }
+      td { padding: 10px; border-right: 1px solid $border-color; }
+    }
+
+    select,
+    input {
+      padding: 6px 8px;
+      font-size: 12px;
+      border: 2px solid $border-color;
+      border-radius: 3px;
+      width: 100%;
+      min-width: 110px;
+      &:focus { outline: none; border-color: $masters-green; }
+    }
+
+    button {
+      background-color: $masters-green;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-right: 5px;
+      margin-top: 0;
+      align-self: baseline;
+
+      &:hover:not(:disabled) {
+        background-color: $masters-light;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+      }
+
+      &.update-button {
+        background-color: #28a745;
+      }
+
+      &.cancel-button {
+        background-color: #dc3545;
+      }
+
+      &.icon-button {
+        background-color: transparent;
+        color: $masters-green;
+        padding: 4px 8px;
+        font-size: 18px;
+        font-weight: bold;
+        border: 1px solid transparent;
+        border-radius: 3px;
+        margin-right: 5px;
+
+        &:hover:not(:disabled) {
+          background-color: rgba(31, 90, 61, 0.1);
+          color: $masters-light;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    span {
+      display: inline-block;
+      margin-right: 8px;
+      font-weight: 500;
+      color: #333;
+
+      &.tee-time-locked {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid #f5c6cb;
+      }
+    }
+
+    a {
+      color: $masters-green;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
+
+      &:hover {
+        color: $masters-light;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+

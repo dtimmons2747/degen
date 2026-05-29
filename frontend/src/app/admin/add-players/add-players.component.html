@@ -1,0 +1,201 @@
+<h2>Add Players</h2>
+
+<div>
+  <select id="tournament" (change)="onTournamentChange($event)">
+    <option value="">Select Tournament</option>
+    @for (tournament of tournaments(); track tournament.id) {
+      <option [value]="tournament.id">
+        {{ tournament.year }} - {{ tournament.location }}
+      </option>
+    }
+  </select>
+</div>
+
+@if (selectedTournamentId()) {
+  <div>
+    <h3>Tournament Players</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Player Name</th>
+          <th>Handicap</th>
+          <th>Part Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (
+          tournamentPlayer of tournamentPlayers();
+          track tournamentPlayer.id
+        ) {
+          @if (editingPlayerId() === tournamentPlayer.id) {
+            <!-- Edit row -->
+            <tr [formGroup]="editPlayerForm">
+              <td>
+                {{ tournamentPlayer.player.firstName }}
+                {{ tournamentPlayer.player.lastName }}
+              </td>
+              <td>
+                <input
+                  type="number"
+                  formControlName="handicap"
+                  placeholder="Enter handicap"
+                />
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  formControlName="partTime"
+                  id="editPartTime"
+                />
+              </td>
+              <td>
+                <button
+                  (click)="saveEditedPlayer(tournamentPlayer)"
+                  [disabled]="!editPlayerForm.valid"
+                  title="Save"
+                  class="icon-button"
+                >
+                  ✓
+                </button>
+                <button
+                  (click)="cancelEditPlayer()"
+                  title="Cancel"
+                  class="icon-button"
+                >
+                  ✕
+                </button>
+              </td>
+            </tr>
+          } @else {
+            <!-- Display row -->
+            <tr>
+              <td>
+                {{ tournamentPlayer.player.firstName }}
+                {{ tournamentPlayer.player.lastName }}
+              </td>
+              <td>{{ tournamentPlayer.handicap }}</td>
+              <td>
+                @if (tournamentPlayer.partTime) {
+                  <span>Yes</span>
+                } @else {
+                  <span>No</span>
+                }
+              </td>
+              <td>
+                <button
+                  (click)="toggleEditPlayer(tournamentPlayer)"
+                  title="Edit"
+                  class="icon-button"
+                >
+                  ✎
+                </button>
+                <button
+                  (click)="deletePlayerFromTournament(tournamentPlayer.id)"
+                  title="Delete"
+                  class="icon-button delete-button"
+                >
+                  ✕
+                </button>
+              </td>
+            </tr>
+          }
+        }
+        <!-- Empty row for adding existing player -->
+        <tr [formGroup]="addExistingForm">
+          <td>
+            <select
+              id="player"
+              formControlName="playerId"
+              [disabled]="getAvailablePlayers().length === 0"
+            >
+              <option value="">Select Player</option>
+              @for (player of getAvailablePlayers(); track player.id) {
+                <option [value]="player.id">
+                  {{ player.firstName }} {{ player.lastName }}
+                </option>
+              }
+            </select>
+          </td>
+          <td>
+            <input
+              type="number"
+              formControlName="handicap"
+              placeholder="Enter handicap"
+            />
+          </td>
+          <td>
+            <label for="existingPartTime">
+              <input
+                type="checkbox"
+                formControlName="partTime"
+                id="existingPartTime"
+              />
+            </label>
+          </td>
+          <td>
+            <button
+              (click)="addExistingPlayer()"
+              [disabled]="!addExistingForm.valid"
+            >
+              Add
+            </button>
+            <a href="javascript:void(0)" (click)="toggleAddPlayerForm()"
+              >Add Player</a
+            >
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add new player form (shown when "Add Player" link is clicked) -->
+  @if (showAddPlayerForm()) {
+    <div>
+      <h3>Create New Player</h3>
+      <form [formGroup]="newPlayerForm" (ngSubmit)="createPlayer()">
+        <div>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            placeholder="First Name"
+            required
+          />
+        </div>
+        <div>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            placeholder="Last Name"
+            required
+          />
+        </div>
+        <div>
+          <input
+            id="handicap"
+            type="number"
+            formControlName="handicap"
+            placeholder="Handicap"
+            required
+          />
+        </div>
+        <div>
+          <label for="newPartTime">
+            <input
+              id="newPartTime"
+              type="checkbox"
+              formControlName="partTime"
+            />
+            Part Time
+          </label>
+        </div>
+        <button type="submit" [disabled]="!newPlayerForm.valid">
+          Create and Add Player
+        </button>
+        <button type="button" (click)="toggleAddPlayerForm()">Cancel</button>
+      </form>
+    </div>
+  }
+}

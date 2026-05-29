@@ -1,0 +1,544 @@
+// Masters Green color scheme
+$masters-green: #1f5a3d;
+$masters-light: #2d7a52;
+$border-color: #d0d0d0;
+$light-bg: #fafafa;
+
+.scorecard-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+
+  h1 {
+    margin-bottom: 30px;
+    color: $masters-green;
+    font-size: 28px;
+  }
+}
+
+.controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 300px;
+
+    label {
+      font-weight: 600;
+      color: $masters-green;
+      font-size: 14px;
+    }
+
+    select {
+      padding: 12px 15px;
+      border: 2px solid $border-color;
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: white;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: $masters-green;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $masters-green;
+        box-shadow: 0 0 0 3px rgba(31, 90, 61, 0.1);
+      }
+
+      &:disabled {
+        background-color: #f0f0f0;
+        color: #999;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.scorecard-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+
+.game-name {
+  color: $masters-green;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.scorecard-grid {
+  border: 2px solid $masters-green;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: 2px solid $border-color;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.holes-row {
+    background-color: $masters-green;
+    color: white;
+    font-weight: 600;
+    min-height: 40px;
+  }
+
+  &.par-row,
+  &.yards-row,
+  &.hcp-row {
+    background-color: $light-bg;
+
+    &:nth-child(even) {
+      background-color: white;
+    }
+  }
+
+  &.player-row {
+    background-color: white;
+
+    &:nth-child(even) {
+      background-color: $light-bg;
+    }
+  }
+
+  &.team-row {
+    background-color: rgba(31, 90, 61, 0.05);
+    border-top: 2px solid $masters-green;
+
+    &:nth-child(even) {
+      background-color: rgba(31, 90, 61, 0.08);
+    }
+  }
+}
+
+.row-label {
+  width: 150px;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  border-right: 2px solid $masters-green;
+  background-color: #f0f0f0;
+  font-size: 12px;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+
+  .player-name {
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: none;
+  }
+
+  .player-handicap {
+    font-size: 10px;
+    font-weight: 500;
+    color: #666;
+    text-transform: none;
+  }
+
+  .team-name {
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: none;
+    color: $masters-green;
+  }
+
+  .holes-row & {
+    background-color: $masters-green;
+    color: white;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    min-height: 40px;
+    text-transform: none;
+  }
+}
+
+.hole-column {
+  flex: 1;
+  min-width: 42px;
+  padding: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid $border-color;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+
+  .holes-row & {
+    background-color: $masters-green;
+    border-right-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 600;
+  }
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  .hole-number {
+    padding: 4px;
+    font-weight: 600;
+  }
+
+  input {
+    flex: 1;
+    width: 100%;
+    padding: 4px 2px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s ease;
+    background-color: transparent;
+    border-right: 1px solid $border-color;
+    color: inherit;
+
+    &:focus {
+      outline: none;
+      background-color: rgba(255, 254, 240, 0.7);
+      box-shadow: inset 0 0 0 2px $masters-green;
+      border-right-color: $masters-green;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+}
+
+.score-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 2px;
+  padding: 4px 0;
+
+  input {
+    width: 100%;
+  }
+
+  .net-score {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+  }
+
+  .game-points {
+    font-size: 10px;
+    font-weight: 600;
+    color: $masters-green;
+    background-color: rgba(31, 90, 61, 0.1);
+    padding: 2px 4px;
+    border-radius: 2px;
+    min-width: 16px;
+  }
+}
+
+.score-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+
+  .gross-total {
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .net-total {
+    font-size: 9px;
+    color: #666;
+    font-style: italic;
+  }
+
+  .game-points-total {
+    font-size: 10px;
+    font-weight: 600;
+    color: $masters-green;
+    background-color: rgba(31, 90, 61, 0.1);
+    padding: 2px 4px;
+    border-radius: 2px;
+    min-width: 20px;
+  }
+}
+
+.team-score-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+
+  .team-score {
+    font-weight: 600;
+    font-size: 12px;
+    color: $masters-green;
+  }
+
+  .game-points {
+    font-size: 10px;
+    font-weight: 600;
+    color: $masters-green;
+    background-color: rgba(31, 90, 61, 0.15);
+    padding: 2px 4px;
+    border-radius: 2px;
+    min-width: 16px;
+  }
+}
+
+.column-out,
+.column-in,
+.column-total {
+  flex: 1;
+  min-width: 42px;
+  padding: 8px 4px;
+  text-align: center;
+  border-right: 2px solid $masters-green;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+
+  .holes-row & {
+    background-color: $masters-green;
+    color: white;
+    border-right-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.column-total {
+  border-right: none;
+}
+
+.column-points {
+  flex: 1;
+  min-width: 60px;
+  padding: 8px 4px;
+  text-align: center;
+  border-right: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background-color: rgba(31, 90, 61, 0.05);
+  border-left: 2px solid $masters-green;
+
+  .holes-row & {
+    background-color: $masters-green;
+    color: white;
+    border-left-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .points-value {
+    font-weight: 700;
+    font-size: 16px;
+    color: $masters-green;
+
+    .holes-row & {
+      color: white;
+    }
+  }
+}
+
+.button-section {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
+
+  button {
+    padding: 12px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &.reset-btn {
+      background-color: $masters-green;
+      color: white;
+
+      &:hover {
+        background-color: #154236;
+        box-shadow: 0 2px 8px rgba(31, 90, 61, 0.2);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+
+    &.generate-btn {
+      background-color: #2d7a52;
+      color: white;
+
+      &:hover {
+        background-color: $masters-green;
+        box-shadow: 0 2px 8px rgba(31, 90, 61, 0.3);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+  }
+}
+
+.total-section {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f0f8f5;
+  border-radius: 8px;
+  border: 3px solid #2d7a52;
+}
+
+.total-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  span:first-child {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f5a3d;
+  }
+
+  .total-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2d7a52;
+    min-width: 80px;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 2px solid #2d7a52;
+  }
+}
+
+.button-section {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.save-btn {
+  background-color: #2d7a52;
+  color: white;
+
+  &:hover {
+    background-color: #1f5a3d;
+  }
+}
+
+.cancel-btn {
+  background-color: #d0d0d0;
+  color: #333;
+
+  &:hover {
+    background-color: #b0b0b0;
+  }
+}
+
+@media (max-width: 768px) {
+  .scorecard-container {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+
+  .selection-section {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .scorecard-section {
+    padding: 1rem;
+  }
+
+  .scorecard-table {
+    th,
+    td {
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .total-display {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .total-value {
+      font-size: 2rem;
+    }
+  }
+
+  .button-section {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

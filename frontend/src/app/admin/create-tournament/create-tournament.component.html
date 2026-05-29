@@ -1,0 +1,290 @@
+<h2>Tournaments</h2>
+
+<div>
+  <h3>Tournament List</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Location</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (tournament of tournaments(); track tournament.id) {
+        <tr>
+          <td>
+            <a
+              href="javascript:void(0)"
+              (click)="toggleTournamentExpand(tournament.id)"
+            >
+              {{ tournament.year }}
+            </a>
+          </td>
+          <td>{{ tournament.location }}</td>
+          <td>
+            <button (click)="editTournament(tournament)">Edit</button>
+          </td>
+        </tr>
+        @if (expandedTournament() === tournament.id) {
+          <tr class="rounds-row">
+            <td colspan="3">
+              <div class="rounds-container">
+                <h4>Rounds for {{ tournament.year }}</h4>
+                <table class="rounds-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Course</th>
+                      <th>Game</th>
+                      <th>Scoring Type</th>
+                      <th>Split Skins</th>
+                      <th>Vs Group</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @if (rounds().has(tournament.id)) {
+                      @for (
+                        round of rounds().get(tournament.id)!;
+                        track round.id
+                      ) {
+                        <tr>
+                          <td>{{ round.day | date: "MMM dd, yyyy" }}</td>
+                          <td>
+                            <select
+                              #courseSelect
+                              [value]="round.course?.id || ''"
+                              [disabled]="round.teeTime"
+                            >
+                              <option value="" disabled>Select Course</option>
+                              @if (round.course) {
+                                <option [value]="round.course.id">
+                                  {{ round.course.name }}
+                                </option>
+                              }
+                              @for (course of courses(); track course.id) {
+                                <option [value]="course.id">
+                                  {{ course.name }}
+                                </option>
+                              }
+                            </select>
+                          </td>
+                          <td>
+                            <select
+                              #gameSelect
+                              [value]="round.game.id"
+                              [disabled]="round.teeTime"
+                              (change)="onGameChange(round, $event)"
+                            >
+                              <option [value]="round.game.id">
+                                {{ round.game.name }}
+                              </option>
+                              @for (game of games(); track game.id) {
+                                @if (game.id !== round.game.id) {
+                                  <option [value]="game.id">
+                                    {{ game.name }}
+                                  </option>
+                                }
+                              }
+                            </select>
+                          </td>
+                          <td>
+                            <select
+                              #scoringTypeSelect
+                              [value]="round.scoringType?.id || ''"
+                              [disabled]="
+                                round.teeTime ||
+                                shouldDisableScoringType(round.game.id)
+                              "
+                            >
+                              <option value="" disabled>
+                                Select Scoring Type
+                              </option>
+                              @if (round.scoringType) {
+                                <option [value]="round.scoringType.id">
+                                  {{ round.scoringType.scoringTypeName }}
+                                </option>
+                              }
+                              @for (
+                                scoringType of scoringTypes();
+                                track scoringType.id
+                              ) {
+                                <option [value]="scoringType.id">
+                                  {{ scoringType.scoringTypeName }}
+                                </option>
+                              }
+                            </select>
+                          </td>
+                          <td>
+                            <input
+                              type="checkbox"
+                              [checked]="round.split_skins"
+                              [disabled]="round.teeTime"
+                              (change)="
+                                round.split_skins = $any($event.target).checked
+                              "
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="checkbox"
+                              [checked]="round.vs_group"
+                              [disabled]="round.teeTime"
+                              (change)="
+                                round.vs_group = $any($event.target).checked
+                              "
+                            />
+                          </td>
+                          <td>
+                            @if (round.teeTime) {
+                              <span class="tee-time-locked">Tee Time Set</span>
+                            } @else {
+                              <button
+                                (click)="
+                                  updateRoundData(
+                                    round.id,
+                                    tournament.id,
+                                    +gameSelect.value,
+                                    +courseSelect.value,
+                                    +scoringTypeSelect.value,
+                                    round.split_skins || false,
+                                    round.vs_group || false
+                                  )
+                                "
+                                title="Save"
+                                class="icon-button"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                (click)="deleteRound(round.id, tournament.id)"
+                                title="Delete"
+                                class="icon-button"
+                              >
+                                ✕
+                              </button>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    }
+                    <!-- Empty row for adding new round -->
+                    @if (showAddRounds() === tournament.id) {
+                      <tr [formGroup]="addRoundForm">
+                        <td>
+                          <input
+                            type="date"
+                            formControlName="date"
+                            [min]="getJuneFirst(tournament.year)"
+                            [max]="getJuneThirtieth(tournament.year)"
+                          />
+                        </td>
+                        <td>
+                          <select formControlName="course">
+                            <option value="" disabled>Select Course</option>
+                            @for (course of courses(); track course.id) {
+                              <option [value]="course.id">
+                                {{ course.name }}
+                              </option>
+                            }
+                          </select>
+                        </td>
+                        <td>
+                          <select formControlName="game">
+                            <option value="" disabled>Select Game</option>
+                            @for (game of games(); track game.id) {
+                              <option [value]="game.name">
+                                {{ game.name }}
+                              </option>
+                            }
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            formControlName="scoringType"
+                            [disabled]="
+                              addRoundForm.get('game')?.value === 'Nines'
+                            "
+                          >
+                            <option value="" disabled>
+                              Select Scoring Type
+                            </option>
+                            @for (
+                              scoringType of scoringTypes();
+                              track scoringType.id
+                            ) {
+                              <option [value]="scoringType.id">
+                                {{ scoringType.scoringTypeName }}
+                              </option>
+                            }
+                          </select>
+                        </td>
+                        <td></td>
+                        <td>
+                          <input type="checkbox" formControlName="vsGroup" />
+                        </td>
+                        <td>
+                          <button
+                            (click)="onAddRoundSubmit(tournament.id)"
+                            [disabled]="!addRoundForm.valid"
+                          >
+                            Add Round
+                          </button>
+                          <button (click)="toggleAddRoundsForm(tournament.id)">
+                            Cancel
+                          </button>
+                        </td>
+                      </tr>
+                    } @else {
+                      <tr>
+                        <td colspan="8">
+                          <a
+                            href="javascript:void(0)"
+                            (click)="toggleAddRoundsForm(tournament.id)"
+                          >
+                            + Add Round
+                          </a>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+        }
+      }
+      <!-- Empty row for adding new tournament -->
+      <tr [formGroup]="tournamentForm">
+        <td>
+          <select formControlName="year" placeholder="Select year">
+            <option value="" disabled>Select Year</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </td>
+        <td>
+          <input
+            type="text"
+            formControlName="location"
+            placeholder="Enter location"
+          />
+        </td>
+        <td>
+          <button
+            (click)="onAddTournamentSubmit()"
+            [disabled]="!tournamentForm.valid"
+          >
+            Add Tournament
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

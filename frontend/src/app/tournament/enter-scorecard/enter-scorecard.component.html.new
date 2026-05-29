@@ -1,0 +1,184 @@
+<div class="scorecard-container">
+  <h1>Enter Golf Scorecard</h1>
+
+  <!-- Cascading Selection Section -->
+  <div class="controls">
+    <!-- Tournament Selection -->
+    <div class="control-group">
+      <label for="tournament-select">Tournament:</label>
+      <select
+        id="tournament-select"
+        (change)="onTournamentChange()"
+        [(ngModel)]="selectedTournamentId"
+        [value]="selectedTournamentId() || ''"
+      >
+        <option [value]="null">Select Tournament</option>
+        @for (tournament of tournaments(); track tournament.id) {
+          <option [value]="tournament.id">{{ tournament.name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Round Selection (shown after tournament selected) -->
+    @if (selectedTournamentId()) {
+      <div class="control-group">
+        <label for="round-select">Round:</label>
+        <select
+          id="round-select"
+          (change)="onRoundChange()"
+          [(ngModel)]="selectedRoundId"
+          [value]="selectedRoundId() || ''"
+        >
+          <option [value]="null">Select Round</option>
+          @for (round of rounds(); track round.id) {
+            <option [value]="round.id">Round {{ round.roundNumber }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <!-- Tee Time Selection (shown after round selected) -->
+    @if (selectedRoundId()) {
+      <div class="control-group">
+        <label for="tee-time-select">Tee Time:</label>
+        <select
+          id="tee-time-select"
+          (change)="onTeeTimeChange()"
+          [(ngModel)]="selectedTeeTimeId"
+          [value]="selectedTeeTimeId() || ''"
+        >
+          <option [value]="null">Select Tee Time</option>
+          @for (teeTime of teeTimes(); track teeTime.id) {
+            <option [value]="teeTime.id">
+              {{ teeTime.teeTime | date: "HH:mm" }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  <!-- Scorecard Grid (shown after tee time selected) -->
+  @if (selectedTeeTimeId() && holes().length > 0) {
+    <div class="scorecard-section">
+      <div class="scorecard-grid">
+        <!-- Header Row - Hole Numbers -->
+        <div class="row holes-row">
+          <div class="row-label"></div>
+          @for (hole of holes().slice(0, 9); track hole.id) {
+            <div class="hole-column">
+              <div class="hole-number">{{ hole.holeNumber }}</div>
+            </div>
+          }
+          <div class="column-out">OUT</div>
+          @for (hole of holes().slice(9, 18); track hole.id) {
+            <div class="hole-column">
+              <div class="hole-number">{{ hole.holeNumber }}</div>
+            </div>
+          }
+          <div class="column-in">IN</div>
+          <div class="column-total">TOT</div>
+        </div>
+
+        <!-- Par Row -->
+        <div class="row par-row">
+          <div class="row-label">Par</div>
+          @for (hole of holes().slice(0, 9); track hole.id) {
+            <div class="hole-column">{{ hole.par }}</div>
+          }
+          <div class="column-out">
+            {{ holes().slice(0, 9).reduce((sum, h) => sum + h.par, 0) }}
+          </div>
+          @for (hole of holes().slice(9, 18); track hole.id) {
+            <div class="hole-column">{{ hole.par }}</div>
+          }
+          <div class="column-in">
+            {{ holes().slice(9, 18).reduce((sum, h) => sum + h.par, 0) }}
+          </div>
+          <div class="column-total">
+            {{ holes().reduce((sum, h) => sum + h.par, 0) }}
+          </div>
+        </div>
+
+        <!-- Yards Row -->
+        <div class="row yards-row">
+          <div class="row-label">Yards</div>
+          @for (hole of holes().slice(0, 9); track hole.id) {
+            <div class="hole-column">{{ hole.yards }}</div>
+          }
+          <div class="column-out">
+            {{ holes().slice(0, 9).reduce((sum, h) => sum + h.yards, 0) }}
+          </div>
+          @for (hole of holes().slice(9, 18); track hole.id) {
+            <div class="hole-column">{{ hole.yards }}</div>
+          }
+          <div class="column-in">
+            {{ holes().slice(9, 18).reduce((sum, h) => sum + h.yards, 0) }}
+          </div>
+          <div class="column-total">
+            {{ holes().reduce((sum, h) => sum + h.yards, 0) }}
+          </div>
+        </div>
+
+        <!-- HCP Row -->
+        <div class="row hcp-row">
+          <div class="row-label">HCP</div>
+          @for (hole of holes().slice(0, 9); track hole.id) {
+            <div class="hole-column">{{ hole.handicap }}</div>
+          }
+          <div class="column-out"></div>
+          @for (hole of holes().slice(9, 18); track hole.id) {
+            <div class="hole-column">{{ hole.handicap }}</div>
+          }
+          <div class="column-in"></div>
+          <div class="column-total"></div>
+        </div>
+
+        <!-- Player Score Rows -->
+        @for (playerScore of playerScores(); track playerScore.playerId) {
+          <div class="row player-row">
+            <div class="row-label">Player {{ playerScore.playerId }}</div>
+            @for (hole of holes().slice(0, 9); track hole.id) {
+              <div class="hole-column">
+                <input
+                  type="number"
+                  min="1"
+                  max="13"
+                  [value]="getPlayerScore(playerScore.playerId, hole.id) || ''"
+                  (blur)="updateScore(playerScore.playerId, hole, $event)"
+                  class="score-input"
+                />
+              </div>
+            }
+            <div class="column-out">
+              {{ getPlayerNineTotal(playerScore.playerId, 1, 9) }}
+            </div>
+            @for (hole of holes().slice(9, 18); track hole.id) {
+              <div class="hole-column">
+                <input
+                  type="number"
+                  min="1"
+                  max="13"
+                  [value]="getPlayerScore(playerScore.playerId, hole.id) || ''"
+                  (blur)="updateScore(playerScore.playerId, hole, $event)"
+                  class="score-input"
+                />
+              </div>
+            }
+            <div class="column-in">
+              {{ getPlayerNineTotal(playerScore.playerId, 10, 18) }}
+            </div>
+            <div class="column-total">
+              {{ getPlayerTotal(playerScore.playerId) }}
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="button-section">
+        <button class="reset-btn" (click)="resetForm()">Reset</button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,119 @@
+<div class="handicap-calculator-container">
+  <h2>Handicap Calculator</h2>
+
+  <div class="player-selection">
+    <label for="player-select">Select Player:</label>
+    <select id="player-select" (change)="onPlayerChange($event)">
+      <option value="">-- Select a Player --</option>
+      @for (player of players(); track player.id) {
+        <option [value]="player.id">
+          {{ player.firstName }} {{ player.lastName }}
+        </option>
+      }
+    </select>
+  </div>
+
+  @if (selectedPlayerId()) {
+    <div class="calculate-section">
+      <button (click)="calculateHandicap()" [disabled]="loading()">
+        @if (loading()) {
+          <span>Calculating...</span>
+        } @else {
+          <span>Calculate Handicap</span>
+        }
+      </button>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-message">
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (handicapResult()) {
+    <div class="result-section">
+      <div class="result-header">
+        <h3>{{ handicapResult()!.playerName }}</h3>
+      </div>
+
+      <div class="result-summary">
+        <div class="summary-card">
+          <h4>Handicap</h4>
+          @if (handicapResult()!.eligible) {
+            <p class="handicap-value">
+              {{
+                handicapResult()!.handicap !== null
+                  ? handicapResult()!.handicap
+                  : "N/A"
+              }}
+            </p>
+          } @else {
+            <p class="handicap-value ineligible">Not Eligible</p>
+            <p class="small-text">Minimum 54 holes required</p>
+          }
+        </div>
+
+        <div class="summary-card">
+          <h4>Rounds Played</h4>
+          <p>{{ handicapResult()!.roundsPlayed }}</p>
+        </div>
+
+        <div class="summary-card">
+          <h4>Holes Played</h4>
+          <p>{{ handicapResult()!.holesPlayed }}</p>
+        </div>
+
+        <div class="summary-card">
+          <h4>Status</h4>
+          @if (handicapResult()!.eligible) {
+            <p class="status-eligible">✓ Eligible</p>
+          } @else {
+            <p class="status-ineligible">✗ Ineligible</p>
+          }
+        </div>
+      </div>
+
+      @if (
+        handicapResult()!.roundDifferentials &&
+        handicapResult()!.roundDifferentials.length > 0
+      ) {
+        <div class="round-details">
+          <h3>Round Details (Last 20 Rounds)</h3>
+          <p class="round-legend">
+            <span class="legend-item used">■ Used in Handicap Calculation</span>
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Course</th>
+                <th>Course Rating</th>
+                <th>Slope</th>
+                <th>Gross Score</th>
+                <th>Score Differential</th>
+                <th>Holes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (
+                round of handicapResult()!.roundDifferentials;
+                track round.roundTeeTimeId
+              ) {
+                <tr [class.round-used]="round.isUsed">
+                  <td>{{ round.roundDate }}</td>
+                  <td>{{ round.courseName }}</td>
+                  <td>{{ round.courseRating }}</td>
+                  <td>{{ round.slopeRating }}</td>
+                  <td>{{ round.grossScore }}</td>
+                  <td>{{ round.scoreDifferential }}</td>
+                  <td>{{ round.holesPlayed }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

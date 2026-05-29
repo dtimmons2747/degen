@@ -1,0 +1,481 @@
+<div class="scorecard-container">
+  <h1>Enter Golf Scorecard</h1>
+
+  <!-- Cascading Selection Section -->
+  <div class="controls">
+    <!-- Tournament Selection -->
+    <div class="control-group">
+      <label for="tournament-select">Tournament:</label>
+      <select
+        id="tournament-select"
+        (change)="onTournamentChange(+$any($event.target).value)"
+        [value]="selectedTournamentId() || ''"
+      >
+        <option value="">Select Tournament</option>
+        @for (tournament of tournaments(); track tournament.id) {
+          <option [value]="tournament.id">
+            {{ tournament.year }} - {{ tournament.location }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <!-- Round Selection (shown after tournament selected) -->
+    @if (selectedTournamentId()) {
+      <div class="control-group">
+        <label for="round-select">Round:</label>
+        <select
+          id="round-select"
+          (change)="onRoundChange(+$any($event.target).value)"
+          [value]="selectedRoundId() || ''"
+        >
+          <option value="">Select Round</option>
+          @for (round of rounds(); track round.id) {
+            <option [value]="round.id">
+              {{ round.day | date: "MMM dd, yyyy" }} - {{ round.course?.name }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+
+    <!-- Tee Time Selection (shown after round selected) -->
+    @if (selectedRoundId()) {
+      <div class="control-group">
+        <label for="tee-time-select">Tee Time:</label>
+        <select
+          id="tee-time-select"
+          (change)="onTeeTimeChange(+$any($event.target).value)"
+          [value]="selectedTeeTimeId() || ''"
+        >
+          <option value="">Select Tee Time</option>
+          @for (teeTime of teeTimes(); track teeTime.id) {
+            <option [value]="teeTime.id">
+              {{ teeTime.teeTime | date: "HH:mm" }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  <!-- Scorecard Grid (shown after tee time selected) -->
+  @if (selectedTeeTimeId()) {
+    @if (holes().length > 0) {
+      <div class="scorecard-section">
+        @if (
+          selectedRound()?.game?.name ||
+          selectedRound()?.scoringType?.scoringTypeName
+        ) {
+          <h2 class="game-name">
+            {{ selectedRound()?.game?.name }}
+            @if (selectedRound()?.scoringType?.scoringTypeName) {
+              - {{ selectedRound()?.scoringType?.scoringTypeName }}
+            }
+          </h2>
+        }
+        <div class="scorecard-grid">
+          <!-- Header Row - Hole Numbers -->
+          <div class="row holes-row">
+            <div class="row-label"></div>
+            @for (hole of holes().slice(0, 9); track hole.id) {
+              <div class="hole-column">
+                <div class="hole-number">{{ hole.holeNumber }}</div>
+              </div>
+            }
+            <div class="column-out">OUT</div>
+            @for (hole of holes().slice(9, 18); track hole.id) {
+              <div class="hole-column">
+                <div class="hole-number">{{ hole.holeNumber }}</div>
+              </div>
+            }
+            <div class="column-in">IN</div>
+            <div class="column-total">TOT</div>
+            @if (
+              getGameType() === "Nines" ||
+              getScoringType() === "Stableford" ||
+              getScoringType() === "Split Skins"
+            ) {
+              <div class="column-points">POINTS</div>
+            }
+          </div>
+
+          <!-- Par Row -->
+          <div class="row par-row">
+            <div class="row-label">Par</div>
+            @for (hole of holes().slice(0, 9); track hole.id) {
+              <div class="hole-column">{{ hole.par }}</div>
+            }
+            <div class="column-out">
+              {{ getHolesTotal(holes().slice(0, 9), "par") }}
+            </div>
+            @for (hole of holes().slice(9, 18); track hole.id) {
+              <div class="hole-column">{{ hole.par }}</div>
+            }
+            <div class="column-in">
+              {{ getHolesTotal(holes().slice(9, 18), "par") }}
+            </div>
+            <div class="column-total">
+              {{ getHolesTotal(holes(), "par") }}
+            </div>
+            @if (
+              getGameType() === "Nines" ||
+              getScoringType() === "Stableford" ||
+              getScoringType() === "Split Skins"
+            ) {
+              <div class="column-points"></div>
+            }
+          </div>
+
+          <!-- Yards Row -->
+          <div class="row yards-row">
+            <div class="row-label">Yards</div>
+            @for (hole of holes().slice(0, 9); track hole.id) {
+              <div class="hole-column">{{ hole.yards }}</div>
+            }
+            <div class="column-out">
+              {{ getHolesTotal(holes().slice(0, 9), "yards") }}
+            </div>
+            @for (hole of holes().slice(9, 18); track hole.id) {
+              <div class="hole-column">{{ hole.yards }}</div>
+            }
+            <div class="column-in">
+              {{ getHolesTotal(holes().slice(9, 18), "yards") }}
+            </div>
+            <div class="column-total">
+              {{ getHolesTotal(holes(), "yards") }}
+            </div>
+            @if (
+              getGameType() === "Nines" ||
+              getScoringType() === "Stableford" ||
+              getScoringType() === "Split Skins"
+            ) {
+              <div class="column-points"></div>
+            }
+          </div>
+
+          <!-- HCP Row -->
+          <div class="row hcp-row">
+            <div class="row-label">HCP</div>
+            @for (hole of holes().slice(0, 9); track hole.id) {
+              <div class="hole-column">{{ hole.handicap }}</div>
+            }
+            <div class="column-out"></div>
+            @for (hole of holes().slice(9, 18); track hole.id) {
+              <div class="hole-column">{{ hole.handicap }}</div>
+            }
+            <div class="column-in"></div>
+            <div class="column-total"></div>
+            @if (
+              getGameType() === "Nines" ||
+              getScoringType() === "Stableford" ||
+              getScoringType() === "Split Skins"
+            ) {
+              <div class="column-points"></div>
+            }
+          </div>
+
+          <!-- Player Score Rows -->
+          @for (
+            playerScore of playerScores();
+            track playerScore.playerId;
+            let i = $index
+          ) {
+            <div class="row player-row">
+              <div class="row-label">
+                <div class="player-name">
+                  {{ playerScore.firstName }} {{ playerScore.lastName }}
+                </div>
+                <div class="player-handicap">
+                  HCP: {{ playerScore.courseHandicap }}
+                </div>
+              </div>
+              @for (hole of holes().slice(0, 9); track hole.id) {
+                <div
+                  class="hole-column"
+                  [style.backgroundColor]="
+                    getHoleColumnBackgroundColor(
+                      playerScore.playerId,
+                      hole.id,
+                      hole,
+                      playerScore.courseHandicap
+                    )
+                  "
+                >
+                  <div class="score-container">
+                    <input
+                      type="number"
+                      min="1"
+                      max="13"
+                      [value]="
+                        getPlayerScore(playerScore.playerId, hole.id) || ''
+                      "
+                      (blur)="updateScore(playerScore.playerId, hole, $event)"
+                      class="score-input"
+                    />
+                    @if (getPlayerScore(playerScore.playerId, hole.id)) {
+                      <span class="net-score">
+                        {{ playerScore.scores[hole.id].netScore || "-" }}
+                      </span>
+                      @if (
+                        getGameType() === "Nines" ||
+                        getScoringType() === "Stableford" ||
+                        getScoringType() === "Split Skins"
+                      ) {
+                        <span class="game-points">
+                          {{
+                            formatGamePoints(
+                              playerScore.scores[hole.id].gamePoints
+                            )
+                          }}
+                        </span>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+              <div class="column-out">
+                <div class="score-total">
+                  <span class="gross-total">{{
+                    getPlayerNineTotal(playerScore.playerId, 1, 9)
+                  }}</span>
+                  <span class="net-total">{{
+                    getPlayerNineNetTotal(playerScore.playerId, 1, 9)
+                  }}</span>
+                  @if (
+                    getGameType() === "Nines" ||
+                    getScoringType() === "Stableford" ||
+                    getScoringType() === "Split Skins"
+                  ) {
+                    <span class="game-points-total">{{
+                      formatGamePoints(
+                        getPlayerNineGamePoints(playerScore.playerId, 1, 9)
+                      )
+                    }}</span>
+                  }
+                </div>
+              </div>
+              @for (hole of holes().slice(9, 18); track hole.id) {
+                <div
+                  class="hole-column"
+                  [style.backgroundColor]="
+                    getHoleColumnBackgroundColor(
+                      playerScore.playerId,
+                      hole.id,
+                      hole,
+                      playerScore.courseHandicap
+                    )
+                  "
+                >
+                  <div class="score-container">
+                    <input
+                      type="number"
+                      min="1"
+                      max="13"
+                      [value]="
+                        getPlayerScore(playerScore.playerId, hole.id) || ''
+                      "
+                      (blur)="updateScore(playerScore.playerId, hole, $event)"
+                      class="score-input"
+                    />
+                    @if (getPlayerScore(playerScore.playerId, hole.id)) {
+                      <span class="net-score">
+                        {{ playerScore.scores[hole.id].netScore || "-" }}
+                      </span>
+                      @if (
+                        getGameType() === "Nines" ||
+                        getScoringType() === "Stableford" ||
+                        getScoringType() === "Split Skins"
+                      ) {
+                        <span class="game-points">
+                          {{
+                            formatGamePoints(
+                              playerScore.scores[hole.id].gamePoints
+                            )
+                          }}
+                        </span>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+              <div class="column-in">
+                <div class="score-total">
+                  <span class="gross-total">{{
+                    getPlayerNineTotal(playerScore.playerId, 10, 18)
+                  }}</span>
+                  <span class="net-total">{{
+                    getPlayerNineNetTotal(playerScore.playerId, 10, 18)
+                  }}</span>
+                  @if (
+                    getGameType() === "Nines" ||
+                    getScoringType() === "Stableford" ||
+                    getScoringType() === "Split Skins"
+                  ) {
+                    <span class="game-points-total">{{
+                      formatGamePoints(
+                        getPlayerNineGamePoints(playerScore.playerId, 10, 18)
+                      )
+                    }}</span>
+                  }
+                </div>
+              </div>
+              <div class="column-total">
+                <div class="score-total">
+                  <span class="gross-total">{{
+                    getPlayerTotal(playerScore.playerId)
+                  }}</span>
+                  <span class="net-total">{{
+                    getPlayerNetTotal(playerScore.playerId)
+                  }}</span>
+                  @if (
+                    getGameType() === "Nines" ||
+                    getScoringType() === "Stableford" ||
+                    getScoringType() === "Split Skins"
+                  ) {
+                    <span class="game-points-total">{{
+                      formatGamePoints(
+                        getPlayerTotalGamePoints(playerScore.playerId)
+                      )
+                    }}</span>
+                  }
+                </div>
+              </div>
+              @if (
+                getGameType() === "Nines" ||
+                getScoringType() === "Stableford" ||
+                getScoringType() === "Split Skins"
+              ) {
+                <div class="column-points">
+                  <div class="points-value">
+                    {{
+                      formatGamePoints(
+                        getPlayerTotalGamePoints(playerScore.playerId)
+                      )
+                    }}
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Team Score Row after last player on team -->
+            @let teamId = getTeamForPlayer(playerScore.playerId);
+            @if (
+              shouldShowTeamRowAfterPlayer(playerScore.playerId, i) &&
+              teamId &&
+              getGameType() !== "Individual"
+            ) {
+              @for (teamScore of teamScores(); track teamScore.teamId) {
+                @if (teamScore.teamId === teamId) {
+                  <div class="row team-row">
+                    <div class="row-label">
+                      <div class="team-name">Team</div>
+                    </div>
+                    @for (hole of holes().slice(0, 9); track hole.id) {
+                      <div class="hole-column team-score-column">
+                        @if (hasTeamScoreForHole(teamScore.teamId, hole.id)) {
+                          <div class="team-score">
+                            <span class="net-score">{{
+                              getTeamBestNetScore(teamScore.teamId, hole.id)
+                            }}</span>
+                          </div>
+                          @if (
+                            getGameType() === "Nines" ||
+                            getScoringType() === "Stableford"
+                          ) {
+                            <span class="game-points">
+                              {{
+                                getTeamGamePoints(teamScore.teamId, hole.id) ||
+                                  0
+                              }}
+                            </span>
+                          }
+                        }
+                      </div>
+                    }
+                    <div class="column-out">
+                      <div class="score-total">
+                        <span class="gross-total">{{
+                          getTeamTotalGrossScore(teamScore.teamId, 1, 9)
+                        }}</span>
+                        <span class="net-total">{{
+                          getTeamTotalNetScore(teamScore.teamId, 1, 9)
+                        }}</span>
+                      </div>
+                    </div>
+                    @for (hole of holes().slice(9, 18); track hole.id) {
+                      <div class="hole-column team-score-column">
+                        @if (hasTeamScoreForHole(teamScore.teamId, hole.id)) {
+                          <div class="team-score">
+                            <span class="net-score">{{
+                              getTeamBestNetScore(teamScore.teamId, hole.id)
+                            }}</span>
+                          </div>
+                          @if (
+                            getGameType() === "Nines" ||
+                            getScoringType() === "Stableford"
+                          ) {
+                            <span class="game-points">
+                              {{
+                                getTeamGamePoints(teamScore.teamId, hole.id) ||
+                                  0
+                              }}
+                            </span>
+                          }
+                        }
+                      </div>
+                    }
+                    <div class="column-in">
+                      <div class="score-total">
+                        <span class="gross-total">{{
+                          getTeamTotalGrossScore(teamScore.teamId, 10, 18)
+                        }}</span>
+                        <span class="net-total">{{
+                          getTeamTotalNetScore(teamScore.teamId, 10, 18)
+                        }}</span>
+                      </div>
+                    </div>
+                    <div class="column-total">
+                      <div class="score-total">
+                        <span class="gross-total">{{
+                          getTeamTotalGrossScore(teamScore.teamId, 1, 18)
+                        }}</span>
+                        <span class="net-total">{{
+                          getTeamTotalNetScore(teamScore.teamId, 1, 18)
+                        }}</span>
+                      </div>
+                    </div>
+                    @if (
+                      getGameType() === "Nines" ||
+                      getScoringType() === "Stableford"
+                    ) {
+                      <div class="column-points">
+                        <div class="points-value">
+                          {{ getTeamTotalGamePoints(teamScore.teamId) }}
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            }
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-section">
+          <button class="reset-btn" (click)="resetForm()">Reset</button>
+          @if (teamScores().length > 0) {
+            <button class="generate-btn" (click)="generateTeamGamePoints()">
+              Generate Team Points
+            </button>
+          }
+        </div>
+      </div>
+    } @else {
+      <p style="padding: 2rem; text-align: center; color: #999">
+        Loading scorecard...
+      </p>
+    }
+  }
+</div>

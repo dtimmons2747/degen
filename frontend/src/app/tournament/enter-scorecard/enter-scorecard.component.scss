@@ -506,6 +506,8 @@ $light-bg: #fafafa;
   .scorecard-container {
     padding: 1rem;
     margin: 1rem auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .selection-section {
@@ -515,6 +517,16 @@ $light-bg: #fafafa;
 
   .scorecard-section {
     padding: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scorecard-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    min-width: min-content;
   }
 
   .scorecard-table {
@@ -555,12 +567,14 @@ $light-bg: #fafafa;
     width: 80px;
     font-size: 10px;
     padding: 6px 4px;
+    flex-shrink: 0;
   }
 
   .hole-column {
     min-width: 36px;
     padding: 0 2px;
     font-size: 11px;
+    flex-shrink: 0;
 
     input {
       font-size: 14px;
@@ -575,10 +589,15 @@ $light-bg: #fafafa;
     min-width: 36px;
     padding: 6px 3px;
     font-size: 11px;
+    flex-shrink: 0;
   }
 
   .column-points {
     min-width: 48px;
+  }
+
+  .row {
+    flex-shrink: 0;
   }
 
   h1 {

@@ -541,4 +541,47 @@ $light-bg: #fafafa;
       width: 100%;
     }
   }
+
+  .controls {
+    gap: 10px;
+    
+    .control-group {
+      min-width: 100%;
+      width: 100%;
+    }
+  }
+
+  .row-label {
+    width: 80px;
+    font-size: 10px;
+    padding: 6px 4px;
+  }
+
+  .hole-column {
+    min-width: 36px;
+    padding: 0 2px;
+    font-size: 11px;
+
+    input {
+      font-size: 14px;
+      padding: 2px 1px;
+    }
+  }
+
+  .column-out,
+  .column-in,
+  .column-total,
+  .column-points {
+    min-width: 36px;
+    padding: 6px 3px;
+    font-size: 11px;
+  }
+
+  .column-points {
+    min-width: 48px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
 }

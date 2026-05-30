@@ -11,7 +11,11 @@
   </div>
 </header>
 <div class="app-container" [class.mobile-menu-open]="mobileMenuOpen()">
-  <div class="mobile-overlay" (click)="closeMobileMenu()" *ngIf="mobileMenuOpen()"></div>
+  <div
+    class="mobile-overlay"
+    (click)="closeMobileMenu()"
+    *ngIf="mobileMenuOpen()"
+  ></div>
   <app-side-menu (click)="closeMobileMenu()"></app-side-menu>
   <main>
     <router-outlet></router-outlet>

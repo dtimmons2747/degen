@@ -184,3 +184,97 @@ table.leaderboard-table {
     font-size: 14px;
   }
 }
+
+@media (max-width: 768px) {
+  .leaderboard-container {
+    padding: 1rem;
+    margin: 1rem auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .controls {
+    gap: 10px;
+    
+    .control-group {
+      min-width: 100%;
+      width: 100%;
+    }
+  }
+
+  .leaderboard-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 20px;
+    flex: 1;
+  }
+
+  table.leaderboard-table {
+    min-width: 600px;
+    width: auto;
+    max-width: none;
+    font-size: 12px;
+
+    thead {
+      th {
+        padding: 10px 8px;
+        font-size: 11px;
+
+        &.rank {
+          width: 50px;
+        }
+
+        &.player {
+          min-width: 120px;
+        }
+
+        &.round {
+          width: 60px;
+        }
+
+        &.total {
+          width: 60px;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        td {
+          padding: 8px 10px;
+          font-size: 11px;
+
+          &.rank {
+            width: 50px;
+          }
+
+          &.player {
+            min-width: 120px;
+          }
+
+          &.round {
+            width: 60px;
+          }
+
+          &.total {
+            width: 60px;
+          }
+        }
+      }
+    }
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    font-size: 14px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+}

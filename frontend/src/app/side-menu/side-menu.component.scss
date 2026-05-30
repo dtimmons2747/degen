@@ -13,6 +13,17 @@ nav {
   overflow-y: auto;
   border-right: 3px solid #d4af37; // Gold accent like Masters
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    width: 250px;
+    height: 100%;
+    padding: 20px 0;
+    border-right: 3px solid #d4af37;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
 }
 
 ul {
@@ -44,6 +55,15 @@ summary {
   &::marker {
     color: #d4af37;
   }
+
+  @media (max-width: 480px) {
+    padding: 12px 20px;
+    font-size: 15px;
+
+    &:hover {
+      padding-left: 25px;
+    }
+  }
 }
 
 details ul {
@@ -73,5 +93,26 @@ a {
 
   &:active {
     background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 10px 35px;
+
+    &:hover {
+      padding-left: 40px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+    padding: 10px 30px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      padding-left: 30px;
+      border-left: none;
+    }
   }
 }

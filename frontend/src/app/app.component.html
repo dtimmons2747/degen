@@ -1,8 +1,18 @@
 ﻿<header class="app-header">
-  <h1>The Degen Invitational</h1>
+  <div class="header-content">
+    <h1>The Degen Invitational</h1>
+    <button
+      class="menu-toggle"
+      (click)="toggleMobileMenu()"
+      aria-label="Toggle menu"
+    >
+      <span class="hamburger"></span>
+    </button>
+  </div>
 </header>
-<div class="app-container">
-  <app-side-menu></app-side-menu>
+<div class="app-container" [class.mobile-menu-open]="mobileMenuOpen()">
+  <div class="mobile-overlay" (click)="closeMobileMenu()" *ngIf="mobileMenuOpen()"></div>
+  <app-side-menu (click)="closeMobileMenu()"></app-side-menu>
   <main>
     <router-outlet></router-outlet>
   </main>

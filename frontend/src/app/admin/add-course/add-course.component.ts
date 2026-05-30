@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 interface HoleInput {
   holeNumber: number;
@@ -70,11 +71,11 @@ export class AddCourseComponent {
     };
 
     // Create course first
-    this.http.post<any>('http://localhost:8080/api/courses', courseData).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/api/courses`, courseData).subscribe({
       next: (createdCourse) => {
         // Create all holes for this course
         const holePromises = this.holes().map(hole =>
-          this.http.post('http://localhost:8080/api/holes', {
+          this.http.post(`${environment.apiUrl}/api/holes`, {
             holeNumber: hole.holeNumber,
             par: hole.par,
             yards: hole.yards,

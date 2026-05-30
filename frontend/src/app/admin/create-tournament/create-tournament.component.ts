@@ -2,6 +2,7 @@ import { Component, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 interface Tournament {
   id: number;
@@ -103,7 +104,7 @@ export class CreateTournamentComponent {
   }
 
   loadTournaments() {
-    this.http.get<Tournament[]>('http://localhost:8080/api/tournaments').subscribe({
+    this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => {
         const sorted = data.sort((a, b) => a.year - b.year);
         this.tournaments.set(sorted);
@@ -113,7 +114,7 @@ export class CreateTournamentComponent {
   }
 
   loadGames() {
-    this.http.get<Game[]>('http://localhost:8080/api/games').subscribe({
+    this.http.get<Game[]>(`${environment.apiUrl}/api/games`).subscribe({
       next: (data) => {
         console.log('Games loaded:', data);
         console.log('Games length:', data.length);
@@ -131,14 +132,14 @@ export class CreateTournamentComponent {
   }
 
   loadCourses() {
-    this.http.get<Course[]>('http://localhost:8080/api/courses').subscribe({
+    this.http.get<Course[]>(`${environment.apiUrl}/api/courses`).subscribe({
       next: (data) => this.courses.set(data),
       error: () => alert('Error loading courses')
     });
   }
 
   loadScoringTypes() {
-    this.http.get<ScoringType[]>('http://localhost:8080/api/scoring-types').subscribe({
+    this.http.get<ScoringType[]>(`${environment.apiUrl}/api/scoring-types`).subscribe({
       next: (data) => {
         console.log('Scoring types loaded:', data);
         this.scoringTypes.set(data);
@@ -152,7 +153,7 @@ export class CreateTournamentComponent {
 
   loadRoundsForTournament(tournamentId: number) {
     if (!this.rounds().has(tournamentId)) {
-      this.http.get<Round[]>(`http://localhost:8080/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
+      this.http.get<Round[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
         next: (data) => {
           const roundsMap = new Map(this.rounds());
           roundsMap.set(tournamentId, data);
@@ -187,7 +188,7 @@ export class CreateTournamentComponent {
 
   onAddTournamentSubmit() {
     if (this.tournamentForm.valid) {
-      this.http.post('http://localhost:8080/api/tournaments', this.tournamentForm.value)
+      this.http.post(`${environment.apiUrl}/api/tournaments`, this.tournamentForm.value)
         .subscribe({
           next: (newTournament: any) => {
             alert('Tournament created successfully');
@@ -214,7 +215,7 @@ export class CreateTournamentComponent {
         scoringType: selectedScoringType ? { id: selectedScoringType.id } : null,
         vs_group: formValue.vsGroup || false
       };
-      this.http.post('http://localhost:8080/api/tournament-rounds', roundData)
+      this.http.post(`${environment.apiUrl}/api/tournament-rounds`, roundData)
         .subscribe({
           next: () => {
             alert('Round added successfully');
@@ -231,7 +232,7 @@ export class CreateTournamentComponent {
 
   deleteRound(roundId: number, tournamentId: number) {
     if (confirm('Are you sure you want to delete this round?')) {
-      this.http.delete(`http://localhost:8080/api/tournament-rounds/${roundId}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/api/tournament-rounds/${roundId}`).subscribe({
         next: () => {
           const roundsMap = new Map(this.rounds());
           roundsMap.delete(tournamentId);
@@ -270,7 +271,7 @@ export class CreateTournamentComponent {
       course: { id: courseId }
     };
 
-    this.http.patch(`http://localhost:8080/api/tournament-rounds/${roundId}`, roundUpdateData).subscribe({
+    this.http.patch(`${environment.apiUrl}/api/tournament-rounds/${roundId}`, roundUpdateData).subscribe({
       next: () => {
         this.selectedCourseForRound.set(null);
         const roundsMap = new Map(this.rounds());
@@ -308,7 +309,7 @@ export class CreateTournamentComponent {
       vs_group: vsGroup
     };
 
-    this.http.patch(`http://localhost:8080/api/tournament-rounds/${roundId}`, roundUpdateData).subscribe({
+    this.http.patch(`${environment.apiUrl}/api/tournament-rounds/${roundId}`, roundUpdateData).subscribe({
       next: () => {
         this.editingRound.set(null);
         const roundsMap = new Map(this.rounds());

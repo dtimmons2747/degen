@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 interface Player {
   id: number;
@@ -66,14 +67,14 @@ export class AddPlayersComponent {
   }
 
   loadPlayers() {
-    this.http.get<Player[]>('http://localhost:8080/api/players').subscribe({
+    this.http.get<Player[]>(`${environment.apiUrl}/api/players`).subscribe({
       next: (data) => this.players.set(data),
       error: () => alert('Error loading players')
     });
   }
 
   loadTournaments() {
-    this.http.get<Tournament[]>('http://localhost:8080/api/tournaments').subscribe({
+    this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => this.tournaments.set(data),
       error: () => alert('Error loading tournaments')
     });
@@ -81,7 +82,7 @@ export class AddPlayersComponent {
 
   loadTournamentPlayers() {
     if (this.selectedTournamentId()) {
-      this.http.get<TournamentPlayer[]>(`http://localhost:8080/api/tournament-handicaps?tournamentId=${this.selectedTournamentId()}`).subscribe({
+      this.http.get<TournamentPlayer[]>(`${environment.apiUrl}/api/tournament-handicaps?tournamentId=${this.selectedTournamentId()}`).subscribe({
         next: (data) => this.tournamentPlayers.set(data),
         error: (error) => {
           console.error('Error loading tournament players:', error);
@@ -99,7 +100,7 @@ export class AddPlayersComponent {
   createPlayer() {
     if (this.newPlayerForm.valid && this.selectedTournamentId()) {
       const playerData = this.newPlayerForm.value;
-      this.http.post('http://localhost:8080/api/players', {
+      this.http.post(`${environment.apiUrl}/api/players`, {
         firstName: playerData.firstName,
         lastName: playerData.lastName
       }).subscribe({
@@ -138,7 +139,7 @@ export class AddPlayersComponent {
 
   deletePlayerFromTournament(tournamentPlayerId: number) {
     if (confirm('Are you sure you want to remove this player from the tournament?')) {
-      this.http.delete(`http://localhost:8080/api/tournament-handicaps/${tournamentPlayerId}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/api/tournament-handicaps/${tournamentPlayerId}`).subscribe({
         next: () => {
           alert('Player removed from tournament');
           this.loadTournamentPlayers();
@@ -163,7 +164,7 @@ export class AddPlayersComponent {
   saveEditedPlayer(tournamentPlayer: TournamentPlayer) {
     if (this.editPlayerForm.valid) {
       const formValue = this.editPlayerForm.value;
-      this.http.put(`http://localhost:8080/api/tournament-handicaps/${tournamentPlayer.id}`, {
+      this.http.put(`${environment.apiUrl}/api/tournament-handicaps/${tournamentPlayer.id}`, {
         handicap: formValue.handicap,
         partTime: formValue.partTime
       }).subscribe({
@@ -183,7 +184,7 @@ export class AddPlayersComponent {
   }
 
   private addPlayerToTournament(playerId: number, handicap: number, partTime: boolean) {
-    this.http.post('http://localhost:8080/api/tournament-handicaps', {
+    this.http.post(`${environment.apiUrl}/api/tournament-handicaps`, {
       player: { id: playerId },
       tournament: { id: this.selectedTournamentId() },
       handicap,

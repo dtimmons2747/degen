@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 interface HandicapCalculatorDto {
   playerId: number;
@@ -51,7 +52,7 @@ export class HandicapCalculatorComponent {
   }
 
   loadPlayers() {
-    this.http.get<Player[]>('http://localhost:8080/api/players').subscribe({
+    this.http.get<Player[]>(`${environment.apiUrl}/api/players`).subscribe({
       next: (data) => this.players.set(data),
       error: () => {
         this.error.set('Error loading players');
@@ -77,7 +78,7 @@ export class HandicapCalculatorComponent {
     this.error.set(null);
     this.handicapResult.set(null);
 
-    this.http.get<HandicapCalculatorDto>(`http://localhost:8080/api/handicap/player/${playerId}`).subscribe({
+    this.http.get<HandicapCalculatorDto>(`${environment.apiUrl}/api/handicap/player/${playerId}`).subscribe({
       next: (data) => {
         this.handicapResult.set(data);
         this.loading.set(false);

@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 interface Tournament {
   id: number;
@@ -128,7 +129,7 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   loadTournaments() {
-    this.http.get<Tournament[]>('http://localhost:8080/api/tournaments').subscribe({
+    this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => {
         this.tournaments.set(data);
       },
@@ -147,7 +148,7 @@ export class EnterScorecardComponent implements OnInit {
       this.selectedTeeTimeId.set(null);
       this.selectedCourseId.set(null);
 
-      this.http.get<TournamentRound[]>(`http://localhost:8080/api/tournament-rounds?tournamentId=${tournamentId}`)
+      this.http.get<TournamentRound[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournamentId}`)
         .subscribe({
           next: (data) => {
             this.rounds.set(data);
@@ -174,7 +175,7 @@ export class EnterScorecardComponent implements OnInit {
         this.selectedCourseId.set(courseId || null);
       }
 
-      this.http.get<RoundTeeTime[]>(`http://localhost:8080/api/round-tee-times?roundId=${roundId}`)
+      this.http.get<RoundTeeTime[]>(`${environment.apiUrl}/api/round-tee-times?roundId=${roundId}`)
         .subscribe({
           next: (data) => {
             this.teeTimes.set(data);
@@ -205,7 +206,7 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   private loadHolesForCourseAndThenScorecards(courseId: number, teeTimeId: number) {
-    this.http.get<Hole[]>(`http://localhost:8080/api/holes?courseId=${courseId}`)
+    this.http.get<Hole[]>(`${environment.apiUrl}/api/holes?courseId=${courseId}`)
       .subscribe({
         next: (data) => {
           this.holes.set(data);
@@ -220,7 +221,7 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   private loadHolesForCourse(courseId: number) {
-    this.http.get<Hole[]>(`http://localhost:8080/api/holes?courseId=${courseId}`)
+    this.http.get<Hole[]>(`${environment.apiUrl}/api/holes?courseId=${courseId}`)
       .subscribe({
         next: (data) => {
           this.holes.set(data);
@@ -243,12 +244,12 @@ export class EnterScorecardComponent implements OnInit {
     let loadedCount = 0;
     allPlayerIds.forEach(playerId => {
       // First get player name
-      this.http.get<any>(`http://localhost:8080/api/players/${playerId}`)
+      this.http.get<any>(`${environment.apiUrl}/api/players/${playerId}`)
         .subscribe({
           next: (player) => {
             // Then get tournament-specific handicap
             if (tournamentId) {
-              this.http.get<any[]>(`http://localhost:8080/api/tournament-handicaps?playerId=${playerId}&tournamentId=${tournamentId}`)
+              this.http.get<any[]>(`${environment.apiUrl}/api/tournament-handicaps?playerId=${playerId}&tournamentId=${tournamentId}`)
                 .subscribe({
                   next: (handicapDataList) => {
                     const handicap = handicapDataList && handicapDataList.length > 0 ? handicapDataList[0].handicap : 0;
@@ -297,7 +298,7 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   private loadScorecardsWithPlayerDetails(teeTimeId: number, playerDetailsMap: Map<number, { firstName: string; lastName: string; handicap: number }>, courseInfo: any) {
-    this.http.get<PlayerScorecard[]>(`http://localhost:8080/api/player-scorecards/by-tee-time/${teeTimeId}`)
+    this.http.get<PlayerScorecard[]>(`${environment.apiUrl}/api/player-scorecards/by-tee-time/${teeTimeId}`)
       .subscribe({
         next: (scorecards) => {
           const playerScoresMap = new Map<number, PlayerScore>();
@@ -574,7 +575,7 @@ export class EnterScorecardComponent implements OnInit {
 
     if (scorecardId && score === null) {
       // Delete scorecard
-      this.http.delete(`http://localhost:8080/api/player-scorecards/${scorecardId}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/api/player-scorecards/${scorecardId}`).subscribe({
         next: () => {
           // Update local state
           const updatedPlayerScores = this.playerScores().map(ps => {
@@ -632,7 +633,7 @@ export class EnterScorecardComponent implements OnInit {
         courseHandicap: courseHandicap,
         gamePoints: gamePoints
       };
-      this.http.put(`http://localhost:8080/api/player-scorecards/${scorecardId}`, scorecard).subscribe({
+      this.http.put(`${environment.apiUrl}/api/player-scorecards/${scorecardId}`, scorecard).subscribe({
         next: (updated: any) => {
           const updatedPlayerScores = this.playerScores().map(ps => {
             if (ps.playerId === playerId) {
@@ -691,7 +692,7 @@ export class EnterScorecardComponent implements OnInit {
         courseHandicap: courseHandicap,
         gamePoints: gamePoints
       };
-      this.http.post('http://localhost:8080/api/player-scorecards', scorecard).subscribe({
+      this.http.post(`${environment.apiUrl}/api/player-scorecards`, scorecard).subscribe({
         next: (created: any) => {
           const updatedPlayerScores = this.playerScores().map(ps => {
             if (ps.playerId === playerId) {
@@ -832,7 +833,7 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   private loadTeams(teeTimeId: number) {
-    this.http.get<RoundTeam[]>(`http://localhost:8080/api/team-game-points/tee-time/${teeTimeId}`)
+    this.http.get<RoundTeam[]>(`${environment.apiUrl}/api/team-game-points/tee-time/${teeTimeId}`)
       .subscribe({
         next: (teams) => {
           this.roundTeams.set(teams);
@@ -877,7 +878,7 @@ export class EnterScorecardComponent implements OnInit {
 
     // Load team game points from database (only gamePoints, preserve calculated gross/net)
     roundTeamIds.forEach(roundTeamId => {
-      this.http.get<any[]>(`http://localhost:8080/api/team-game-points/scores/${roundTeamId}`)
+      this.http.get<any[]>(`${environment.apiUrl}/api/team-game-points/scores/${roundTeamId}`)
         .subscribe({
           next: (teamScores) => {
             // Update team scores with gamePoints from database, preserving calculated gross/net
@@ -1000,7 +1001,7 @@ export class EnterScorecardComponent implements OnInit {
 
   private saveTeamGamePoints(teamId: number, holeId: number, gamePoints: number) {
     const request = { gamePoints: gamePoints };
-    this.http.put(`http://localhost:8080/api/team-game-points/save-game-points/${teamId}/${holeId}`, request).subscribe({
+    this.http.put(`${environment.apiUrl}/api/team-game-points/save-game-points/${teamId}/${holeId}`, request).subscribe({
       next: (response: any) => {
         console.log(`Saved team game points for team ${teamId}, hole ${holeId}: ${gamePoints}`);
       },
@@ -1057,7 +1058,7 @@ export class EnterScorecardComponent implements OnInit {
     const proceed = skipConfirm || confirm('Generate team game points for all teams in this round? All teams must have completed scores for all 18 holes.');
     
     if (proceed) {
-      this.http.post(`http://localhost:8080/api/team-game-points/calculate-points/${roundId}`, {})
+      this.http.post(`${environment.apiUrl}/api/team-game-points/calculate-points/${roundId}`, {})
         .subscribe({
           next: (response: any) => {
             if (!skipConfirm) {
@@ -1083,7 +1084,7 @@ export class EnterScorecardComponent implements OnInit {
     if (!teeTimeId) return;
 
     // Reload player scorecards to get updated game points
-    this.http.get<PlayerScorecard[]>(`http://localhost:8080/api/player-scorecards/by-tee-time/${teeTimeId}`)
+    this.http.get<PlayerScorecard[]>(`${environment.apiUrl}/api/player-scorecards/by-tee-time/${teeTimeId}`)
       .subscribe({
         next: (scorecards) => {
           // Update player scores with refreshed game points

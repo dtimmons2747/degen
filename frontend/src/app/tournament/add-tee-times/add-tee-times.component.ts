@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 interface Tournament {
   id: number;
@@ -105,14 +106,14 @@ export class AddTeeTimesComponent {
   }
 
   loadTournaments() {
-    this.http.get<Tournament[]>('http://localhost:8080/api/tournaments').subscribe({
+    this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => this.tournaments.set(data),
       error: () => alert('Error loading tournaments')
     });
   }
 
   loadPlayersForTournament(tournamentId: number) {
-    this.http.get<Golfer[]>(`http://localhost:8080/api/tournaments/${tournamentId}/players`).subscribe({
+    this.http.get<Golfer[]>(`${environment.apiUrl}/api/tournaments/${tournamentId}/players`).subscribe({
       next: (data) => {
         this.golfers.set(data);
         this.loadTournamentHandicaps(tournamentId);
@@ -125,7 +126,7 @@ export class AddTeeTimesComponent {
   }
 
   loadTournamentHandicaps(tournamentId: number) {
-    this.http.get<any[]>(`http://localhost:8080/api/tournament-handicaps?tournamentId=${tournamentId}`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/api/tournament-handicaps?tournamentId=${tournamentId}`).subscribe({
       next: (data) => {
         const handicapMap = new Map<number, number>();
         data.forEach(h => {
@@ -154,7 +155,7 @@ export class AddTeeTimesComponent {
   }
 
   loadRoundsForTournament(tournamentId: number) {
-    this.http.get<Round[]>(`http://localhost:8080/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
+    this.http.get<Round[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
       next: (data) => this.rounds.set(data),
       error: () => alert('Error loading rounds')
     });
@@ -172,7 +173,7 @@ export class AddTeeTimesComponent {
   }
 
   loadTeeTimesForRound(roundId: number) {
-    this.http.get<RoundTeeTime[]>(`http://localhost:8080/api/round-tee-times?roundId=${roundId}`).subscribe({
+    this.http.get<RoundTeeTime[]>(`${environment.apiUrl}/api/round-tee-times?roundId=${roundId}`).subscribe({
       next: (data) => this.teeTimes.set(data),
       error: () => alert('Error loading tee times')
     });
@@ -214,7 +215,7 @@ export class AddTeeTimesComponent {
         player4Handicap: formValue.handicap4 ? parseFloat(formValue.handicap4) : null
       };
 
-      this.http.post('http://localhost:8080/api/round-tee-times', teeTimeData).subscribe({
+      this.http.post(`${environment.apiUrl}/api/round-tee-times`, teeTimeData).subscribe({
         next: () => {
           this.addTeeTimeForm.reset();
           this.showAddTeeTime.set(false);
@@ -232,7 +233,7 @@ export class AddTeeTimesComponent {
 
   deleteTeeTime(teeTimeId: number) {
     if (confirm('Are you sure you want to delete this tee time?')) {
-      this.http.delete(`http://localhost:8080/api/round-tee-times/${teeTimeId}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/api/round-tee-times/${teeTimeId}`).subscribe({
         next: () => {
           if (this.selectedRoundId()) {
             this.loadTeeTimesForRound(this.selectedRoundId()!);
@@ -359,7 +360,7 @@ export class AddTeeTimesComponent {
       player4Handicap: formValue.handicap4 ? parseFloat(formValue.handicap4) : null
     };
 
-    this.http.put(`http://localhost:8080/api/round-tee-times/${teeTime.id}`, updatedTeeTime).subscribe({
+    this.http.put(`${environment.apiUrl}/api/round-tee-times/${teeTime.id}`, updatedTeeTime).subscribe({
       next: () => {
         this.editingTeeTimeId.set(null);
         if (this.selectedRoundId()) {
@@ -448,7 +449,7 @@ export class AddTeeTimesComponent {
     }
 
     this.isLoadingPlayerSelection.set(true);
-    this.http.get<PlayerSelectionInfo[]>(`http://localhost:8080/api/round-tee-times/player-selection/${this.selectedRoundId()}`).subscribe({
+    this.http.get<PlayerSelectionInfo[]>(`${environment.apiUrl}/api/round-tee-times/player-selection/${this.selectedRoundId()}`).subscribe({
       next: (players) => {
         this.playerList.set(players);
         
@@ -495,7 +496,7 @@ export class AddTeeTimesComponent {
 
     this.isLoadingRandomization.set(true);
     this.http.post<any[]>(
-      `http://localhost:8080/api/round-tee-times/randomize-selection/${this.selectedRoundId()}`,
+      `${environment.apiUrl}/api/round-tee-times/randomize-selection/${this.selectedRoundId()}`,
       selectedIds
     ).subscribe({
       next: (suggestions) => {
@@ -543,7 +544,7 @@ export class AddTeeTimesComponent {
       if (deleteCount >= teeTimesToDelete.length) {
         this.createTeesFromRandomized();
       } else {
-        this.http.delete(`http://localhost:8080/api/round-tee-times/${teeTimesToDelete[deleteCount]}`).subscribe({
+        this.http.delete(`${environment.apiUrl}/api/round-tee-times/${teeTimesToDelete[deleteCount]}`).subscribe({
           next: () => {
             deleteCount++;
             deleteAll();
@@ -600,7 +601,7 @@ export class AddTeeTimesComponent {
         player4Handicap: null
       };
 
-      this.http.post('http://localhost:8080/api/round-tee-times', teeTimeData).subscribe({
+      this.http.post(`${environment.apiUrl}/api/round-tee-times`, teeTimeData).subscribe({
         next: () => {
           createCount++;
           createNextTeeTime();

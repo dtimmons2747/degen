@@ -2,6 +2,7 @@ import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@a
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 interface Tournament {
   id: number;
@@ -74,7 +75,7 @@ interface LeaderboardEntry {
                   <td class="rank">{{ rank + 1 }}</td>
                   <td class="player">{{ entry.playerName }}</td>
                   @for (round of tournamentRounds(); track round.id) {
-                    <td class="round" [style.backgroundColor]="getRoundPointsColor(entry, round.id)">
+                    <td class="round" [style.background-color]="getRoundPointsColor(entry, round.id)">
                       {{ getRoundPoints(entry, round.id) }}
                     </td>
                   }
@@ -110,7 +111,7 @@ export class LeaderboardComponent {
   }
 
   loadTournaments() {
-    this.http.get<Tournament[]>('http://localhost:8080/api/tournaments').subscribe({
+    this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => this.tournaments.set(data),
       error: (err) => {
         console.error('Error loading tournaments:', err);
@@ -131,7 +132,7 @@ export class LeaderboardComponent {
   }
 
   loadTournamentRounds(tournamentId: number) {
-    this.http.get<TournamentRound[]>(`http://localhost:8080/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
+    this.http.get<TournamentRound[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
       next: (data) => {
         // Sort by day
         const sorted = data.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
@@ -145,7 +146,7 @@ export class LeaderboardComponent {
 
   loadLeaderboard(tournamentId: number) {
     this.isLoading.set(true);
-    this.http.get<LeaderboardEntry[]>(`http://localhost:8080/api/leaderboard/tournament/${tournamentId}`).subscribe({
+    this.http.get<LeaderboardEntry[]>(`${environment.apiUrl}/api/leaderboard/tournament/${tournamentId}`).subscribe({
       next: (data) => {
         this.leaderboardData.set(data);
         this.isLoading.set(false);

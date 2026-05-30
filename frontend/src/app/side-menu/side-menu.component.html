@@ -8,13 +8,13 @@
           <li>
             <a routerLink="/tournament/enter-scorecard">Enter Scorecard</a>
           </li>
-          <li>
+          <li *ngIf="!isMobile()">
             <a routerLink="/tournament/add-tee-times">Add Tee Times</a>
           </li>
         </ul>
       </details>
     </li>
-    <li>
+    <li *ngIf="!isMobile()">
       <details>
         <summary>Admin</summary>
         <ul>

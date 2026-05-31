@@ -224,7 +224,11 @@ interface RoundLeaderboardEntry {
                     </td>
                     <td class="score" [style.background-color]="getScoreColor(entry)">
                       @if (entry.score !== null) {
-                        {{ entry.score > 0 ? '+' : '' }}{{ entry.score }}
+                        @if (entry.score === 0) {
+                          E
+                        } @else {
+                          {{ entry.score > 0 ? '+' : '' }}{{ entry.score }}
+                        }
                       } @else {
                         -
                       }

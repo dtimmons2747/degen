@@ -696,11 +696,13 @@ public class LeaderboardService {
 
                 // Accumulate net score and par for this hole
                 if (scorecard.getNetScore() != null) {
-                    playerScoresRelativeToPar.put(playerId, playerScoresRelativeToPar.getOrDefault(playerId, 0) + scorecard.getNetScore());
+                    playerScoresRelativeToPar.put(playerId,
+                            playerScoresRelativeToPar.getOrDefault(playerId, 0) + scorecard.getNetScore());
                 }
-                
+
                 if (scorecard.getHole() != null && scorecard.getHole().getPar() != null) {
-                    playerTotalPar.put(playerId, playerTotalPar.getOrDefault(playerId, 0) + scorecard.getHole().getPar());
+                    playerTotalPar.put(playerId,
+                            playerTotalPar.getOrDefault(playerId, 0) + scorecard.getHole().getPar());
                 }
 
                 playerHolesCompleted.put(playerId, playerHolesCompleted.getOrDefault(playerId, 0) + 1);
@@ -718,7 +720,7 @@ public class LeaderboardService {
         for (Long playerId : playerNames.keySet()) {
             Integer totalNetScore = playerScoresRelativeToPar.getOrDefault(playerId, 0);
             Integer totalPar = playerTotalPar.getOrDefault(playerId, 0);
-            Integer scoreRelativeToPar = totalNetScore - totalPar;  // e.g., 66 - 70 = -4
+            Integer scoreRelativeToPar = totalNetScore - totalPar; // e.g., 66 - 70 = -4
             Integer thru = playerHolesCompleted.getOrDefault(playerId, 0);
 
             // Get round points from tournament leaderboard

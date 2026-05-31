@@ -1,3 +1,3 @@
 export const environment = {
-  apiUrl: 'https://degen-smjo.onrender.com'
+  apiUrl: 'https://degen-mnfv.onrender.com'
 };

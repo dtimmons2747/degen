@@ -302,7 +302,8 @@ table.leaderboard-table {
         }
 
         &.player {
-          min-width: 65px;
+          min-width: 40px;
+          max-width: 45px;
           word-break: break-word;
           white-space: normal;
         }
@@ -340,7 +341,8 @@ table.leaderboard-table {
           }
 
           &.player {
-            min-width: 65px;
+            min-width: 40px;
+            max-width: 45px;
             word-break: break-word;
             white-space: normal;
           }

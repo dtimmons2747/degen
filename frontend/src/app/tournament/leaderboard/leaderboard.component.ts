@@ -101,7 +101,13 @@ interface RoundLeaderboardEntry {
                 ) {
                   <tr>
                     <td class="rank">{{ rank + 1 }}</td>
-                    <td class="player">{{ entry.playerName.split(' ').pop() }}</td>
+                    <td class="player">
+                      @if (isMobile()) {
+                        {{ entry.playerName.split(' ').pop() }}
+                      } @else {
+                        {{ entry.playerName }}
+                      }
+                    </td>
                     @for (round of tournamentRounds(); track round.id) {
                       <td class="round" [style.background-color]="getRoundPointsColor(entry, round.id)">
                         {{ getRoundPoints(entry, round.id) }}
@@ -189,7 +195,13 @@ interface RoundLeaderboardEntry {
                 ) {
                   <tr>
                     <td class="rank">{{ rank + 1 }}</td>
-                    <td class="player">{{ entry.playerName.split(' ').pop() }}</td>
+                    <td class="player">
+                      @if (isMobile()) {
+                        {{ entry.playerName.split(' ').pop() }}
+                      } @else {
+                        {{ entry.playerName }}
+                      }
+                    </td>
                     <td class="score">
                       @if (entry.score !== null) {
                         {{ entry.score > 0 ? '+' : '' }}{{ entry.score }}

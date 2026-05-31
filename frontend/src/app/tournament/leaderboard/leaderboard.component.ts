@@ -197,7 +197,7 @@ interface RoundLeaderboardEntry {
                         -
                       }
                     </td>
-                    <td class="thru">{{ entry.thru }}/18</td>
+                    <td class="thru">{{ entry.thru }}</td>
                     <td class="round-points">{{ entry.roundPoints }}</td>
                     <td class="total">{{ entry.totalPoints }}</td>
                   </tr>

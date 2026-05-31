@@ -625,17 +625,41 @@ public class LeaderboardService {
     /**
      * Get leaderboard for a specific round with live scoring data
      * Returns players sorted by score with their current progress
+     * totalPoints = cumulative points up to and including this round (snapshot in time)
      */
     public List<RoundLeaderboardEntryDto> getRoundLeaderboard(Long roundId) {
         System.out.println("\n===== getRoundLeaderboard called for round " + roundId + " =====");
 
-        // Get tournament leaderboard to get total points for all players
+        // Get the round to find the tournament and ordering
         TournamentRound round = tournamentRoundRepository.findById(roundId).orElse(null);
         if (round == null) {
             System.out.println("Round not found");
             return new ArrayList<>();
         }
 
+        // Get all rounds for this tournament, sorted by day
+        List<TournamentRound> allRounds = tournamentRoundRepository.findByTournamentId(round.getTournament().getId());
+        allRounds.sort((a, b) -> a.getDay().compareTo(b.getDay()));
+        
+        // Find the index of the current round
+        int currentRoundIndex = -1;
+        for (int i = 0; i < allRounds.size(); i++) {
+            if (allRounds.get(i).getId().equals(roundId)) {
+                currentRoundIndex = i;
+                break;
+            }
+        }
+        
+        if (currentRoundIndex == -1) {
+            System.out.println("Round not found in tournament");
+            return new ArrayList<>();
+        }
+        
+        // Get rounds up to and including current round
+        List<TournamentRound> roundsUpToCurrent = allRounds.subList(0, currentRoundIndex + 1);
+        System.out.println("Calculating cumulative points through round " + currentRoundIndex + " (" + roundsUpToCurrent.size() + " rounds)");
+        
+        // Calculate tournament leaderboard (this will give us all round points)
         List<LeaderboardEntryDto> tournamentLeaderboard = getTournamentLeaderboard(round.getTournament().getId());
         Map<Long, LeaderboardEntryDto> tournamentLeaderboardMap = new HashMap<>();
         for (LeaderboardEntryDto entry : tournamentLeaderboard) {
@@ -698,12 +722,17 @@ public class LeaderboardService {
             // Get round points from tournament leaderboard
             LeaderboardEntryDto tourEntry = tournamentLeaderboardMap.get(playerId);
             Double roundPoints = 0.0;
-            Double totalPoints = 0.0;
+            Double cumulativePoints = 0.0;
 
             if (tourEntry != null) {
                 Double points = tourEntry.getRoundPoints().getOrDefault(roundId, 0.0);
                 roundPoints = points != null ? points : 0.0;
-                totalPoints = tourEntry.getTotalPoints() != null ? tourEntry.getTotalPoints() : 0.0;
+                
+                // Calculate cumulative points: sum all round points up to and including current round
+                for (TournamentRound r : roundsUpToCurrent) {
+                    Double roundPts = tourEntry.getRoundPoints().getOrDefault(r.getId(), 0.0);
+                    cumulativePoints += (roundPts != null ? roundPts : 0.0);
+                }
             }
 
             RoundLeaderboardEntryDto entry = new RoundLeaderboardEntryDto(
@@ -712,7 +741,7 @@ public class LeaderboardService {
                     netScore,
                     thru,
                     roundPoints,
-                    totalPoints);
+                    cumulativePoints);
 
             roundLeaderboard.add(entry);
         }

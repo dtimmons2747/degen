@@ -649,8 +649,7 @@ public class LeaderboardService {
         }
 
         // Collect all players in this round and their scores
-        Map<Long, Integer> playerGrossScores = new HashMap<>();
-        Map<Long, Integer> playerParScores = new HashMap<>();
+        Map<Long, Integer> playerNetScores = new HashMap<>();
         Map<Long, Integer> playerHolesCompleted = new HashMap<>();
         Map<Long, String> playerNames = new HashMap<>();
 
@@ -666,22 +665,21 @@ public class LeaderboardService {
                             scorecard.getPlayer().getFirstName() + " " + scorecard.getPlayer().getLastName());
                 }
 
-                // Accumulate scores
-                if (scorecard.getGrossScore() != null) {
-                    playerGrossScores.put(playerId,
-                            playerGrossScores.getOrDefault(playerId, 0) + scorecard.getGrossScore());
+                // Accumulate net scores (use netScore field if available, otherwise calculate from gross - par)
+                Integer score = scorecard.getNetScore();
+                if (score == null && scorecard.getGrossScore() != null && scorecard.getHole() != null && scorecard.getHole().getPar() != null) {
+                    score = scorecard.getGrossScore() - scorecard.getHole().getPar();
                 }
-
-                if (scorecard.getHole() != null && scorecard.getHole().getPar() != null) {
-                    playerParScores.put(playerId,
-                            playerParScores.getOrDefault(playerId, 0) + scorecard.getHole().getPar());
+                
+                if (score != null) {
+                    playerNetScores.put(playerId, playerNetScores.getOrDefault(playerId, 0) + score);
                 }
 
                 playerHolesCompleted.put(playerId, playerHolesCompleted.getOrDefault(playerId, 0) + 1);
             }
         }
 
-        if (playerGrossScores.isEmpty()) {
+        if (playerNetScores.isEmpty()) {
             System.out.println("No scores found for this round");
             return new ArrayList<>();
         }
@@ -690,9 +688,7 @@ public class LeaderboardService {
         List<RoundLeaderboardEntryDto> roundLeaderboard = new ArrayList<>();
 
         for (Long playerId : playerNames.keySet()) {
-            Integer grossScore = playerGrossScores.getOrDefault(playerId, 0);
-            Integer parScore = playerParScores.getOrDefault(playerId, 0);
-            Integer netScore = grossScore - parScore;
+            Integer netScore = playerNetScores.getOrDefault(playerId, 0);
             Integer thru = playerHolesCompleted.getOrDefault(playerId, 0);
 
             // Get round points from tournament leaderboard

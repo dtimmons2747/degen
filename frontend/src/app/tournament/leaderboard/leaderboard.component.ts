@@ -288,7 +288,7 @@ export class LeaderboardComponent {
   }
 
   private checkIsMobile() {
-    this.isMobile.set(window.innerWidth <= 1024);
+    this.isMobile.set(window.innerWidth <= 768);
   }
 
   private setDefaultViewMode() {

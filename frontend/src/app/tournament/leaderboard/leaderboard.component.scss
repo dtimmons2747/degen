@@ -58,7 +58,7 @@ $border-color: #d0d0d0;
     }
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 768px) {
     margin-bottom: 20px;
 
     .tab-button {
@@ -261,7 +261,7 @@ table.leaderboard-table {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .leaderboard-container {
     padding: 1rem;
     margin: 1rem auto;

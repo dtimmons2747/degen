@@ -302,7 +302,9 @@ table.leaderboard-table {
         }
 
         &.player {
-          min-width: 80px;
+          min-width: 65px;
+          word-break: break-word;
+          white-space: normal;
         }
 
         &.round {
@@ -338,7 +340,9 @@ table.leaderboard-table {
           }
 
           &.player {
-            min-width: 80px;
+            min-width: 65px;
+            word-break: break-word;
+            white-space: normal;
           }
 
           &.round {

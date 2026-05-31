@@ -287,10 +287,9 @@ table.leaderboard-table {
   }
 
   table.leaderboard-table {
-    min-width: 600px;
-    width: auto;
-    max-width: none;
+    width: 100%;
     font-size: 12px;
+    table-layout: fixed;
 
     thead {
       th {
@@ -302,10 +301,9 @@ table.leaderboard-table {
         }
 
         &.player {
-          min-width: 40px;
-          max-width: 45px;
-          word-break: break-word;
-          white-space: normal;
+          width: 40px;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         &.round {
@@ -341,10 +339,9 @@ table.leaderboard-table {
           }
 
           &.player {
-            min-width: 40px;
-            max-width: 45px;
-            word-break: break-word;
-            white-space: normal;
+            width: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
           &.round {

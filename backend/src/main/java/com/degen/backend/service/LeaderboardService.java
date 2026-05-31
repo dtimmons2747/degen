@@ -359,7 +359,8 @@ public class LeaderboardService {
                     for (Long playerId : playerIds) {
                         if (!playerNames.containsKey(playerId)) {
                             Optional<Player> playerOpt = playerRepository.findById(playerId);
-                            playerOpt.ifPresent(player -> playerNames.put(playerId, player.getFirstName() + " " + player.getLastName()));
+                            playerOpt.ifPresent(player -> playerNames.put(playerId,
+                                    player.getFirstName() + " " + player.getLastName()));
                         }
                     }
                 }
@@ -542,7 +543,8 @@ public class LeaderboardService {
                     // Store player name
                     if (!playerNames.containsKey(playerId)) {
                         Optional<Player> playerOpt = playerRepository.findById(playerId);
-                        playerOpt.ifPresent(player -> playerNames.put(playerId, player.getFirstName() + " " + player.getLastName()));
+                        playerOpt.ifPresent(player -> playerNames.put(playerId,
+                                player.getFirstName() + " " + player.getLastName()));
                     }
 
                     // Get net score for this player in this tee time
@@ -665,12 +667,14 @@ public class LeaderboardService {
                             scorecard.getPlayer().getFirstName() + " " + scorecard.getPlayer().getLastName());
                 }
 
-                // Accumulate net scores (use netScore field if available, otherwise calculate from gross - par)
+                // Accumulate net scores (use netScore field if available, otherwise calculate
+                // from gross - par)
                 Integer score = scorecard.getNetScore();
-                if (score == null && scorecard.getGrossScore() != null && scorecard.getHole() != null && scorecard.getHole().getPar() != null) {
+                if (score == null && scorecard.getGrossScore() != null && scorecard.getHole() != null
+                        && scorecard.getHole().getPar() != null) {
                     score = scorecard.getGrossScore() - scorecard.getHole().getPar();
                 }
-                
+
                 if (score != null) {
                     playerNetScores.put(playerId, playerNetScores.getOrDefault(playerId, 0) + score);
                 }

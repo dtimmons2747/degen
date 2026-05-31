@@ -1,4 +1,4 @@
-import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -25,72 +25,199 @@ interface LeaderboardEntry {
   totalPoints: number;
 }
 
+interface RoundLeaderboardEntry {
+  playerId: number;
+  playerName: string;
+  score: number | null; // Net score relative to par
+  thru: number; // Last hole completed
+  roundPoints: number;
+  totalPoints: number;
+}
+
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="leaderboard-container">
-      <h2>Tournament Leaderboard</h2>
+      <h2>Leaderboard</h2>
 
-      <div class="controls">
-        <div class="control-group">
-          <label for="tournament-select">Tournament:</label>
-          <select
-            id="tournament-select"
-            (change)="onTournamentChange(+$any($event.target).value)"
-            [value]="selectedTournamentId() || ''"
-          >
-            <option value="">Select Tournament</option>
-            @for (tournament of tournaments(); track tournament.id) {
-              <option [value]="tournament.id">
-                {{ tournament.year }} - {{ tournament.location }}
-              </option>
-            }
-          </select>
-        </div>
+      <!-- Tabs for switching between views -->
+      <div class="leaderboard-tabs">
+        <button 
+          class="tab-button"
+          [class.active]="viewMode() === 'tournament'"
+          (click)="setViewMode('tournament')"
+        >
+          Tournament
+        </button>
+        <button 
+          class="tab-button"
+          [class.active]="viewMode() === 'round'"
+          (click)="setViewMode('round')"
+        >
+          Current Round
+        </button>
       </div>
 
-      @if (selectedTournamentId() && leaderboardData().length > 0) {
-        <div class="leaderboard-table-container">
-          <h3>Leaderboard</h3>
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th class="rank">Rank</th>
-                <th class="player">Player</th>
-                @for (round of tournamentRounds(); track round.id) {
-                  <th class="round">{{ round.day | date: "MM/dd" }}</th>
-                }
-                <th class="total">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (
-                entry of leaderboardData();
-                track entry.playerId;
-                let rank = $index
-              ) {
-                <tr>
-                  <td class="rank">{{ rank + 1 }}</td>
-                  <td class="player">{{ entry.playerName }}</td>
-                  @for (round of tournamentRounds(); track round.id) {
-                    <td class="round" [style.background-color]="getRoundPointsColor(entry, round.id)">
-                      {{ getRoundPoints(entry, round.id) }}
-                    </td>
-                  }
-                  <td class="total">{{ formatPoints(entry.totalPoints) }}</td>
-                </tr>
+      <!-- Tournament Leaderboard View -->
+      @if (viewMode() === 'tournament') {
+        <div class="controls">
+          <div class="control-group">
+            <label for="tournament-select">Tournament:</label>
+            <select
+              id="tournament-select"
+              (change)="onTournamentChange(+$any($event.target).value)"
+              [value]="selectedTournamentId() || ''"
+            >
+              <option value="">Select Tournament</option>
+              @for (tournament of tournaments(); track tournament.id) {
+                <option [value]="tournament.id">
+                  {{ tournament.year }} - {{ tournament.location }}
+                </option>
               }
-            </tbody>
-          </table>
+            </select>
+          </div>
         </div>
+
+        @if (selectedTournamentId() && leaderboardData().length > 0) {
+          <div class="leaderboard-table-container">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th class="rank">Rank</th>
+                  <th class="player">Player</th>
+                  @for (round of tournamentRounds(); track round.id) {
+                    <th class="round">{{ round.day | date: "MM/dd" }}</th>
+                  }
+                  <th class="total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (
+                  entry of leaderboardData();
+                  track entry.playerId;
+                  let rank = $index
+                ) {
+                  <tr>
+                    <td class="rank">{{ rank + 1 }}</td>
+                    <td class="player">{{ entry.playerName }}</td>
+                    @for (round of tournamentRounds(); track round.id) {
+                      <td class="round" [style.background-color]="getRoundPointsColor(entry, round.id)">
+                        {{ getRoundPoints(entry, round.id) }}
+                      </td>
+                    }
+                    <td class="total">{{ formatPoints(entry.totalPoints) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (selectedTournamentId() && leaderboardData().length === 0) {
+          <div class="empty-state">
+            <p>No leaderboard data available for this tournament.</p>
+          </div>
+        }
+
+        @if (!selectedTournamentId()) {
+          <div class="empty-state">
+            <p>Select a tournament to view the leaderboard.</p>
+          </div>
+        }
       }
 
-      @if (selectedTournamentId() && leaderboardData().length === 0) {
-        <div class="empty-state">
-          <p>No leaderboard data available for this tournament.</p>
+      <!-- Round Leaderboard View -->
+      @if (viewMode() === 'round') {
+        <div class="controls">
+          <div class="control-group">
+            <label for="tournament-select-round">Tournament:</label>
+            <select
+              id="tournament-select-round"
+              (change)="onTournamentChangeRound(+$any($event.target).value)"
+              [value]="selectedTournamentIdRound() || ''"
+            >
+              <option value="">Select Tournament</option>
+              @for (tournament of tournaments(); track tournament.id) {
+                <option [value]="tournament.id">
+                  {{ tournament.year }} - {{ tournament.location }}
+                </option>
+              }
+            </select>
+          </div>
+          @if (tournamentRoundsRound().length > 0) {
+            <div class="control-group">
+              <label for="round-select">Round:</label>
+              <select
+                id="round-select"
+                (change)="onRoundChange(+$any($event.target).value)"
+                [value]="selectedRoundId() || ''"
+              >
+                <option value="">Select Round</option>
+                @for (round of tournamentRoundsRound(); track round.id) {
+                  <option [value]="round.id">
+                    {{ round.day | date: "MMM dd, yyyy" }}
+                    @if (round.course?.name) {
+                      - {{ round.course?.name }}
+                    }
+                  </option>
+                }
+              </select>
+            </div>
+          }
         </div>
+
+        @if (selectedRoundId() && roundLeaderboardData().length > 0) {
+          <div class="leaderboard-table-container">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th class="rank">Rank</th>
+                  <th class="player">Player</th>
+                  <th class="score">Score</th>
+                  <th class="thru">Thru</th>
+                  <th class="round-points">Rd Pts</th>
+                  <th class="total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (
+                  entry of roundLeaderboardData();
+                  track entry.playerId;
+                  let rank = $index
+                ) {
+                  <tr>
+                    <td class="rank">{{ rank + 1 }}</td>
+                    <td class="player">{{ entry.playerName }}</td>
+                    <td class="score">
+                      @if (entry.score !== null) {
+                        {{ entry.score > 0 ? '+' : '' }}{{ entry.score }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                    <td class="thru">{{ entry.thru }}/18</td>
+                    <td class="round-points">{{ entry.roundPoints }}</td>
+                    <td class="total">{{ entry.totalPoints }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (selectedRoundId() && roundLeaderboardData().length === 0) {
+          <div class="empty-state">
+            <p>No leaderboard data available for this round.</p>
+          </div>
+        }
+
+        @if (!selectedRoundId()) {
+          <div class="empty-state">
+            <p>Select a round to view live leaderboard.</p>
+          </div>
+        }
       }
     </div>
   `,
@@ -100,19 +227,54 @@ interface LeaderboardEntry {
 export class LeaderboardComponent {
   private http = inject(HttpClient);
 
+  // Tournament view signals
   tournaments = signal<Tournament[]>([]);
   selectedTournamentId = signal<number | null>(null);
   tournamentRounds = signal<TournamentRound[]>([]);
   leaderboardData = signal<LeaderboardEntry[]>([]);
   isLoading = signal(false);
 
+  // Round view signals
+  viewMode = signal<'tournament' | 'round'>('tournament');
+  selectedTournamentIdRound = signal<number | null>(null);
+  tournamentRoundsRound = signal<TournamentRound[]>([]);
+  selectedRoundId = signal<number | null>(null);
+  roundLeaderboardData = signal<RoundLeaderboardEntry[]>([]);
+  isMobile = signal(false);
+
   constructor() {
     this.loadTournaments();
+    this.checkIsMobile();
+    this.setDefaultViewMode();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkIsMobile();
+  }
+
+  private checkIsMobile() {
+    this.isMobile.set(window.innerWidth <= 768);
+  }
+
+  private setDefaultViewMode() {
+    this.viewMode.set(this.isMobile() ? 'round' : 'tournament');
+  }
+
+  setViewMode(mode: 'tournament' | 'round') {
+    this.viewMode.set(mode);
   }
 
   loadTournaments() {
     this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
-      next: (data) => this.tournaments.set(data),
+      next: (data) => {
+        this.tournaments.set(data);
+        // Auto-select first tournament for round view
+        if (data.length > 0) {
+          this.selectedTournamentIdRound.set(data[0].id);
+          this.loadTournamentRoundsForRound(data[0].id);
+        }
+      },
       error: (err) => {
         console.error('Error loading tournaments:', err);
         alert('Error loading tournaments');
@@ -120,6 +282,7 @@ export class LeaderboardComponent {
     });
   }
 
+  // Tournament view methods
   onTournamentChange(tournamentId: number) {
     this.selectedTournamentId.set(tournamentId);
     this.tournamentRounds.set([]);
@@ -154,6 +317,84 @@ export class LeaderboardComponent {
       error: (err) => {
         console.error('Error loading leaderboard:', err);
         alert('Error loading leaderboard');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  // Round view methods
+  onTournamentChangeRound(tournamentId: number) {
+    this.selectedTournamentIdRound.set(tournamentId);
+    this.tournamentRoundsRound.set([]);
+    this.selectedRoundId.set(null);
+    this.roundLeaderboardData.set([]);
+
+    if (tournamentId) {
+      this.loadTournamentRoundsForRound(tournamentId);
+    }
+  }
+
+  loadTournamentRoundsForRound(tournamentId: number) {
+    this.http.get<TournamentRound[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournamentId}`).subscribe({
+      next: (data) => {
+        // Sort by day
+        const sorted = data.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
+        this.tournamentRoundsRound.set(sorted);
+        
+        // Auto-detect current round
+        const currentRound = this.findCurrentRound(sorted);
+        if (currentRound) {
+          this.selectedRoundId.set(currentRound.id);
+          this.loadRoundLeaderboard(currentRound.id);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading rounds:', err);
+      }
+    });
+  }
+
+  private findCurrentRound(rounds: TournamentRound[]): TournamentRound | null {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const round of rounds) {
+      const roundDate = new Date(round.day);
+      roundDate.setHours(0, 0, 0, 0);
+      if (roundDate.getTime() === today.getTime()) {
+        return round;
+      }
+    }
+    return null;
+  }
+
+  onRoundChange(roundId: number) {
+    this.selectedRoundId.set(roundId);
+    this.roundLeaderboardData.set([]);
+
+    if (roundId) {
+      this.loadRoundLeaderboard(roundId);
+    }
+  }
+
+  loadRoundLeaderboard(roundId: number) {
+    this.isLoading.set(true);
+    this.http.get<RoundLeaderboardEntry[]>(`${environment.apiUrl}/api/leaderboard/round/${roundId}`).subscribe({
+      next: (data) => {
+        // Sort by score (ascending - lower is better relative to par)
+        const sorted = data.sort((a, b) => {
+          // If either has null score, put non-null first
+          if (a.score === null && b.score === null) return 0;
+          if (a.score === null) return 1;
+          if (b.score === null) return -1;
+          return a.score - b.score;
+        });
+        this.roundLeaderboardData.set(sorted);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading round leaderboard:', err);
+        this.roundLeaderboardData.set([]);
         this.isLoading.set(false);
       }
     });

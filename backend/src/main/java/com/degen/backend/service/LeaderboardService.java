@@ -625,7 +625,8 @@ public class LeaderboardService {
     /**
      * Get leaderboard for a specific round with live scoring data
      * Returns players sorted by score with their current progress
-     * totalPoints = cumulative points up to and including this round (snapshot in time)
+     * totalPoints = cumulative points up to and including this round (snapshot in
+     * time)
      */
     public List<RoundLeaderboardEntryDto> getRoundLeaderboard(Long roundId) {
         System.out.println("\n===== getRoundLeaderboard called for round " + roundId + " =====");
@@ -640,7 +641,7 @@ public class LeaderboardService {
         // Get all rounds for this tournament, sorted by day
         List<TournamentRound> allRounds = tournamentRoundRepository.findByTournamentId(round.getTournament().getId());
         allRounds.sort((a, b) -> a.getDay().compareTo(b.getDay()));
-        
+
         // Find the index of the current round
         int currentRoundIndex = -1;
         for (int i = 0; i < allRounds.size(); i++) {
@@ -649,16 +650,17 @@ public class LeaderboardService {
                 break;
             }
         }
-        
+
         if (currentRoundIndex == -1) {
             System.out.println("Round not found in tournament");
             return new ArrayList<>();
         }
-        
+
         // Get rounds up to and including current round
         List<TournamentRound> roundsUpToCurrent = allRounds.subList(0, currentRoundIndex + 1);
-        System.out.println("Calculating cumulative points through round " + currentRoundIndex + " (" + roundsUpToCurrent.size() + " rounds)");
-        
+        System.out.println("Calculating cumulative points through round " + currentRoundIndex + " ("
+                + roundsUpToCurrent.size() + " rounds)");
+
         // Calculate tournament leaderboard (this will give us all round points)
         List<LeaderboardEntryDto> tournamentLeaderboard = getTournamentLeaderboard(round.getTournament().getId());
         Map<Long, LeaderboardEntryDto> tournamentLeaderboardMap = new HashMap<>();
@@ -675,7 +677,8 @@ public class LeaderboardService {
         }
 
         // Collect all players in this round and their scores
-        Map<Long, Integer> playerNetScores = new HashMap<>();
+        Map<Long, Integer> playerScoresRelativeToPar = new HashMap<>();
+        Map<Long, Integer> playerTotalPar = new HashMap<>();
         Map<Long, Integer> playerHolesCompleted = new HashMap<>();
         Map<Long, String> playerNames = new HashMap<>();
 
@@ -691,23 +694,20 @@ public class LeaderboardService {
                             scorecard.getPlayer().getFirstName() + " " + scorecard.getPlayer().getLastName());
                 }
 
-                // Accumulate net scores (use netScore field if available, otherwise calculate
-                // from gross - par)
-                Integer score = scorecard.getNetScore();
-                if (score == null && scorecard.getGrossScore() != null && scorecard.getHole() != null
-                        && scorecard.getHole().getPar() != null) {
-                    score = scorecard.getGrossScore() - scorecard.getHole().getPar();
+                // Accumulate net score and par for this hole
+                if (scorecard.getNetScore() != null) {
+                    playerScoresRelativeToPar.put(playerId, playerScoresRelativeToPar.getOrDefault(playerId, 0) + scorecard.getNetScore());
                 }
-
-                if (score != null) {
-                    playerNetScores.put(playerId, playerNetScores.getOrDefault(playerId, 0) + score);
+                
+                if (scorecard.getHole() != null && scorecard.getHole().getPar() != null) {
+                    playerTotalPar.put(playerId, playerTotalPar.getOrDefault(playerId, 0) + scorecard.getHole().getPar());
                 }
 
                 playerHolesCompleted.put(playerId, playerHolesCompleted.getOrDefault(playerId, 0) + 1);
             }
         }
 
-        if (playerNetScores.isEmpty()) {
+        if (playerScoresRelativeToPar.isEmpty()) {
             System.out.println("No scores found for this round");
             return new ArrayList<>();
         }
@@ -716,7 +716,9 @@ public class LeaderboardService {
         List<RoundLeaderboardEntryDto> roundLeaderboard = new ArrayList<>();
 
         for (Long playerId : playerNames.keySet()) {
-            Integer netScore = playerNetScores.getOrDefault(playerId, 0);
+            Integer totalNetScore = playerScoresRelativeToPar.getOrDefault(playerId, 0);
+            Integer totalPar = playerTotalPar.getOrDefault(playerId, 0);
+            Integer scoreRelativeToPar = totalNetScore - totalPar;  // e.g., 66 - 70 = -4
             Integer thru = playerHolesCompleted.getOrDefault(playerId, 0);
 
             // Get round points from tournament leaderboard
@@ -727,8 +729,9 @@ public class LeaderboardService {
             if (tourEntry != null) {
                 Double points = tourEntry.getRoundPoints().getOrDefault(roundId, 0.0);
                 roundPoints = points != null ? points : 0.0;
-                
-                // Calculate cumulative points: sum all round points up to and including current round
+
+                // Calculate cumulative points: sum all round points up to and including current
+                // round
                 for (TournamentRound r : roundsUpToCurrent) {
                     Double roundPts = tourEntry.getRoundPoints().getOrDefault(r.getId(), 0.0);
                     cumulativePoints += (roundPts != null ? roundPts : 0.0);
@@ -738,7 +741,7 @@ public class LeaderboardService {
             RoundLeaderboardEntryDto entry = new RoundLeaderboardEntryDto(
                     playerId,
                     playerNames.get(playerId),
-                    netScore,
+                    scoreRelativeToPar,
                     thru,
                     roundPoints,
                     cumulativePoints);
@@ -746,7 +749,7 @@ public class LeaderboardService {
             roundLeaderboard.add(entry);
         }
 
-        // Sort by net score (ascending = best first)
+        // Sort by score relative to par (ascending = best first; -4 is better than +2)
         roundLeaderboard.sort((a, b) -> {
             if (a.getScore() == null && b.getScore() == null)
                 return 0;

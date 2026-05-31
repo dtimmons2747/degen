@@ -617,4 +617,111 @@ public class LeaderboardService {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Get leaderboard for a specific round with live scoring data
+     * Returns players sorted by score with their current progress
+     */
+    public List<RoundLeaderboardEntryDto> getRoundLeaderboard(Long roundId) {
+        System.out.println("\n===== getRoundLeaderboard called for round " + roundId + " =====");
+        
+        // Get tournament leaderboard to get total points for all players
+        TournamentRound round = tournamentRoundRepository.findById(roundId).orElse(null);
+        if (round == null) {
+            System.out.println("Round not found");
+            return new ArrayList<>();
+        }
+        
+        List<LeaderboardEntryDto> tournamentLeaderboard = getTournamentLeaderboard(round.getTournament().getId());
+        Map<Long, LeaderboardEntryDto> tournamentLeaderboardMap = new HashMap<>();
+        for (LeaderboardEntryDto entry : tournamentLeaderboard) {
+            tournamentLeaderboardMap.put(entry.getPlayerId(), entry);
+        }
+        
+        // Get all tee times for this round
+        List<RoundTeeTime> teeTimes = roundTeeTimeRepository.findAllByTournamentRoundId(roundId);
+        
+        if (teeTimes.isEmpty()) {
+            System.out.println("No tee times found for round");
+            return new ArrayList<>();
+        }
+        
+        // Collect all players in this round and their scores
+        Map<Long, Integer> playerGrossScores = new HashMap<>();
+        Map<Long, Integer> playerParScores = new HashMap<>();
+        Map<Long, Integer> playerHolesCompleted = new HashMap<>();
+        Map<Long, String> playerNames = new HashMap<>();
+        
+        for (RoundTeeTime teeTime : teeTimes) {
+            List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId());
+            
+            for (PlayerScorecard scorecard : scorecards) {
+                Long playerId = scorecard.getPlayer().getId();
+                
+                // Store player name
+                if (!playerNames.containsKey(playerId)) {
+                    playerNames.put(playerId, scorecard.getPlayer().getFirstName() + " " + scorecard.getPlayer().getLastName());
+                }
+                
+                // Accumulate scores
+                if (scorecard.getGrossScore() != null) {
+                    playerGrossScores.put(playerId, playerGrossScores.getOrDefault(playerId, 0) + scorecard.getGrossScore());
+                }
+                
+                if (scorecard.getHole() != null && scorecard.getHole().getPar() != null) {
+                    playerParScores.put(playerId, playerParScores.getOrDefault(playerId, 0) + scorecard.getHole().getPar());
+                }
+                
+                playerHolesCompleted.put(playerId, playerHolesCompleted.getOrDefault(playerId, 0) + 1);
+            }
+        }
+        
+        if (playerGrossScores.isEmpty()) {
+            System.out.println("No scores found for this round");
+            return new ArrayList<>();
+        }
+        
+        // Create round leaderboard entries
+        List<RoundLeaderboardEntryDto> roundLeaderboard = new ArrayList<>();
+        
+        for (Long playerId : playerNames.keySet()) {
+            Integer grossScore = playerGrossScores.getOrDefault(playerId, 0);
+            Integer parScore = playerParScores.getOrDefault(playerId, 0);
+            Integer netScore = grossScore - parScore;
+            Integer thru = playerHolesCompleted.getOrDefault(playerId, 0);
+            
+            // Get round points from tournament leaderboard
+            LeaderboardEntryDto tourEntry = tournamentLeaderboardMap.get(playerId);
+            Double roundPoints = 0.0;
+            Double totalPoints = 0.0;
+            
+            if (tourEntry != null) {
+                Double points = tourEntry.getRoundPoints().getOrDefault(roundId, 0.0);
+                roundPoints = points != null ? points : 0.0;
+                totalPoints = tourEntry.getTotalPoints() != null ? tourEntry.getTotalPoints() : 0.0;
+            }
+            
+            RoundLeaderboardEntryDto entry = new RoundLeaderboardEntryDto(
+                playerId,
+                playerNames.get(playerId),
+                netScore,
+                thru,
+                roundPoints,
+                totalPoints
+            );
+            
+            roundLeaderboard.add(entry);
+        }
+        
+        // Sort by net score (ascending = best first)
+        roundLeaderboard.sort((a, b) -> {
+            if (a.getScore() == null && b.getScore() == null) return 0;
+            if (a.getScore() == null) return 1;
+            if (b.getScore() == null) return -1;
+            return a.getScore().compareTo(b.getScore());
+        });
+        
+        System.out.println("Round leaderboard has " + roundLeaderboard.size() + " entries");
+        return roundLeaderboard;
+    }
 }

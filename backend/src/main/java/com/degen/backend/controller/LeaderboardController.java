@@ -1,6 +1,7 @@
 package com.degen.backend.controller;
 
 import com.degen.backend.dto.LeaderboardEntryDto;
+import com.degen.backend.dto.RoundLeaderboardEntryDto;
 import com.degen.backend.service.LeaderboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,13 @@ public class LeaderboardController {
     public ResponseEntity<List<LeaderboardEntryDto>> getTournamentLeaderboard(
             @PathVariable Long tournamentId) {
         List<LeaderboardEntryDto> leaderboard = leaderboardService.getTournamentLeaderboard(tournamentId);
+        return ResponseEntity.ok(leaderboard);
+    }
+
+    @GetMapping("/round/{roundId}")
+    public ResponseEntity<List<RoundLeaderboardEntryDto>> getRoundLeaderboard(
+            @PathVariable Long roundId) {
+        List<RoundLeaderboardEntryDto> leaderboard = leaderboardService.getRoundLeaderboard(roundId);
         return ResponseEntity.ok(leaderboard);
     }
 }

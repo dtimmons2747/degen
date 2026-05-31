@@ -181,10 +181,30 @@ interface RoundLeaderboardEntry {
                 <tr>
                   <th class="rank">Rank</th>
                   <th class="player">Player</th>
-                  <th class="score">Score</th>
-                  <th class="thru">Thru</th>
-                  <th class="round-points">Rd Pts</th>
-                  <th class="total">Total</th>
+                  <th class="score" (click)="onColumnSort('score')" style="cursor: pointer; user-select: none;">
+                    Score
+                    @if (sortColumn() === 'score') {
+                      {{ sortDirection() === 'asc' ? '▼' : '▲' }}
+                    }
+                  </th>
+                  <th class="thru" (click)="onColumnSort('thru')" style="cursor: pointer; user-select: none;">
+                    Thru
+                    @if (sortColumn() === 'thru') {
+                      {{ sortDirection() === 'asc' ? '▼' : '▲' }}
+                    }
+                  </th>
+                  <th class="round-points" (click)="onColumnSort('roundPoints')" style="cursor: pointer; user-select: none;">
+                    Rd Pts
+                    @if (sortColumn() === 'roundPoints') {
+                      {{ sortDirection() === 'asc' ? '▼' : '▲' }}
+                    }
+                  </th>
+                  <th class="total" (click)="onColumnSort('totalPoints')" style="cursor: pointer; user-select: none;">
+                    Total
+                    @if (sortColumn() === 'totalPoints') {
+                      {{ sortDirection() === 'asc' ? '▼' : '▲' }}
+                    }
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -202,7 +222,7 @@ interface RoundLeaderboardEntry {
                         {{ entry.playerName }}
                       }
                     </td>
-                    <td class="score">
+                    <td class="score" [style.background-color]="getScoreColor(entry)">
                       @if (entry.score !== null) {
                         {{ entry.score > 0 ? '+' : '' }}{{ entry.score }}
                       } @else {
@@ -210,8 +230,8 @@ interface RoundLeaderboardEntry {
                       }
                     </td>
                     <td class="thru">{{ entry.thru }}</td>
-                    <td class="round-points">{{ entry.roundPoints }}</td>
-                    <td class="total">{{ entry.totalPoints }}</td>
+                    <td class="round-points" [style.background-color]="getRoundPointsColorRound(entry)">{{ entry.roundPoints }}</td>
+                    <td class="total" [style.background-color]="getTotalPointsColor(entry)">{{ entry.totalPoints }}</td>
                   </tr>
                 }
               </tbody>
@@ -252,6 +272,8 @@ export class LeaderboardComponent {
   tournamentRoundsRound = signal<TournamentRound[]>([]);
   selectedRoundId = signal<number | null>(null);
   roundLeaderboardData = signal<RoundLeaderboardEntry[]>([]);
+  sortColumn = signal<'score' | 'thru' | 'roundPoints' | 'totalPoints'>('score');
+  sortDirection = signal<'asc' | 'desc'>('asc');
   isMobile = signal(false);
 
   constructor() {
@@ -266,7 +288,7 @@ export class LeaderboardComponent {
   }
 
   private checkIsMobile() {
-    this.isMobile.set(window.innerWidth <= 768);
+    this.isMobile.set(window.innerWidth <= 1024);
   }
 
   private setDefaultViewMode() {
@@ -500,5 +522,134 @@ export class LeaderboardComponent {
   formatPoints(points: number): string {
     // Format total points: no decimals for whole numbers, 2 decimals otherwise
     return Number.isInteger(points) ? String(points) : points.toFixed(2);
+  }
+
+  onColumnSort(column: 'score' | 'thru' | 'roundPoints' | 'totalPoints') {
+    // If clicking same column, toggle direction; otherwise set new column with asc
+    if (this.sortColumn() === column) {
+      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortColumn.set(column);
+      this.sortDirection.set('asc');
+    }
+    this.sortRoundLeaderboard();
+  }
+
+  private sortRoundLeaderboard() {
+    const data = [...this.roundLeaderboardData()];
+    const column = this.sortColumn();
+    const direction = this.sortDirection();
+
+    data.sort((a, b) => {
+      let aVal: any = 0;
+      let bVal: any = 0;
+
+      switch (column) {
+        case 'score':
+          aVal = a.score ?? 9999; // Nulls go to bottom
+          bVal = b.score ?? 9999;
+          break;
+        case 'thru':
+          aVal = a.thru;
+          bVal = b.thru;
+          break;
+        case 'roundPoints':
+          aVal = a.roundPoints;
+          bVal = b.roundPoints;
+          break;
+        case 'totalPoints':
+          aVal = a.totalPoints;
+          bVal = b.totalPoints;
+          break;
+      }
+
+      const result = aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      return direction === 'asc' ? result : -result;
+    });
+
+    this.roundLeaderboardData.set(data);
+  }
+
+  getScoreColor(entry: RoundLeaderboardEntry): string {
+    if (entry.score === null) return '#FFFFFF';
+
+    const allScores = this.roundLeaderboardData()
+      .map(e => e.score)
+      .filter(s => s !== null) as number[];
+
+    if (allScores.length === 0) return '#FFFFFF';
+
+    const uniqueScores = [...new Set(allScores)].sort((a, b) => a - b);
+    const scoreIndex = uniqueScores.indexOf(entry.score!);
+    const totalUnique = uniqueScores.length;
+
+    if (totalUnique === 1) return '#FFFFFF';
+
+    // Lower score is better (negative is good), higher score is bad (positive)
+    // Best = index 0 (green), Worst = index last (red)
+    const middle = Math.ceil(totalUnique / 2) - 1;
+
+    if (scoreIndex <= middle) {
+      if (scoreIndex === 0) return '#9FD79F';
+      else if (scoreIndex === 1 && totalUnique > 2) return '#B3E5B3';
+      else return '#E8F5E9';
+    } else {
+      const posFromEnd = totalUnique - 1 - scoreIndex;
+      if (posFromEnd === 0) return '#F5A9A9';
+      else if (posFromEnd === 1 && totalUnique > 2) return '#FFCCCC';
+      else return '#FFEBEE';
+    }
+  }
+
+  getRoundPointsColorRound(entry: RoundLeaderboardEntry): string {
+    const allPoints = this.roundLeaderboardData().map(e => e.roundPoints);
+    
+    if (allPoints.length === 0) return '#FFFFFF';
+
+    const uniquePoints = [...new Set(allPoints)].sort((a, b) => b - a); // Sort desc for points (higher is better)
+    const pointIndex = uniquePoints.indexOf(entry.roundPoints);
+    const totalUnique = uniquePoints.length;
+
+    if (totalUnique === 1) return '#FFFFFF';
+
+    // Higher points is better (green), lower points is worse (red)
+    const middle = Math.ceil(totalUnique / 2) - 1;
+
+    if (pointIndex <= middle) {
+      if (pointIndex === 0) return '#9FD79F';
+      else if (pointIndex === 1 && totalUnique > 2) return '#B3E5B3';
+      else return '#E8F5E9';
+    } else {
+      const posFromEnd = totalUnique - 1 - pointIndex;
+      if (posFromEnd === 0) return '#F5A9A9';
+      else if (posFromEnd === 1 && totalUnique > 2) return '#FFCCCC';
+      else return '#FFEBEE';
+    }
+  }
+
+  getTotalPointsColor(entry: RoundLeaderboardEntry): string {
+    const allTotals = this.roundLeaderboardData().map(e => e.totalPoints);
+    
+    if (allTotals.length === 0) return '#FFFFFF';
+
+    const uniqueTotals = [...new Set(allTotals)].sort((a, b) => b - a); // Sort desc (higher is better)
+    const totalIndex = uniqueTotals.indexOf(entry.totalPoints);
+    const totalUnique = uniqueTotals.length;
+
+    if (totalUnique === 1) return '#FFFFFF';
+
+    // Higher total points is better (green), lower is worse (red)
+    const middle = Math.ceil(totalUnique / 2) - 1;
+
+    if (totalIndex <= middle) {
+      if (totalIndex === 0) return '#9FD79F';
+      else if (totalIndex === 1 && totalUnique > 2) return '#B3E5B3';
+      else return '#E8F5E9';
+    } else {
+      const posFromEnd = totalUnique - 1 - totalIndex;
+      if (posFromEnd === 0) return '#F5A9A9';
+      else if (posFromEnd === 1 && totalUnique > 2) return '#FFCCCC';
+      else return '#FFEBEE';
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -98,6 +98,7 @@ export class EnterScorecardComponent implements OnInit {
   selectedRoundId = signal<number | null>(null);
   selectedTeeTimeId = signal<number | null>(null);
   selectedCourseId = signal<number | null>(null);
+  isMobile = signal(false);
 
   selectedTeeTime = computed(() => {
     const teeTimeId = this.selectedTeeTimeId();
@@ -122,7 +123,18 @@ export class EnterScorecardComponent implements OnInit {
     return ids;
   });
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.checkIsMobile();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkIsMobile();
+  }
+
+  private checkIsMobile() {
+    this.isMobile.set(window.innerWidth <= 768);
+  }
 
   ngOnInit() {
     this.loadTournaments();
@@ -542,7 +554,7 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   updateScore(playerId: number, hole: Hole, event: Event) {
-    const target = event.target as HTMLInputElement;
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
     const newScore = target.value.trim();
 
     // Allow empty to clear score
@@ -552,8 +564,8 @@ export class EnterScorecardComponent implements OnInit {
     }
 
     const score = parseInt(newScore, 10);
-    if (isNaN(score) || score < 1 || score > 13) {
-      alert('Score must be between 1 and 13');
+    if (isNaN(score) || score < 0 || score > 13) {
+      alert('Score must be between 0 and 13');
       target.value = this.getPlayerScore(playerId, hole.id)?.toString() || '';
       return;
     }

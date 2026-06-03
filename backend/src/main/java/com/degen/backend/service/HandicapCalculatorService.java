@@ -221,14 +221,7 @@ public class HandicapCalculatorService {
     private double getPlayingConditionsAdjustment(int numRounds) {
         if (numRounds == 3) return -2.0;
         if (numRounds == 4) return -1.0;
-        if (numRounds == 5) return 0.0;
-        if (numRounds <= 8) return -1.0;
-        if (numRounds <= 11) return 0.0;
-        if (numRounds <= 14) return 0.0;
-        if (numRounds <= 16) return 0.0;
-        if (numRounds <= 18) return 0.0;
-        if (numRounds == 19) return 0.0;
-        return 0.0; // 20+ rounds
+        return 0.0; // 5+ rounds
     }
 
     private static class RoundData {

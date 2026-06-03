@@ -205,12 +205,15 @@
                   <div class="score-container">
                     @if (isMobile()) {
                       <select
-                        [value]="getPlayerScore(playerScore.playerId, hole.id) || ''"
+                        [(ngModel)]="playerScore.scores[hole.id].grossScore"
                         (change)="updateScore(playerScore.playerId, hole, $event)"
                         class="score-dropdown"
                       >
-                        <option value="">-</option>
-                        @for (score of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track score) {
+                        <option [value]="null">-</option>
+                        @for (
+                          score of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                          track score
+                        ) {
                           <option [value]="score">{{ score }}</option>
                         }
                       </select>
@@ -283,12 +286,15 @@
                   <div class="score-container">
                     @if (isMobile()) {
                       <select
-                        [value]="getPlayerScore(playerScore.playerId, hole.id) || ''"
+                        [(ngModel)]="playerScore.scores[hole.id].grossScore"
                         (change)="updateScore(playerScore.playerId, hole, $event)"
                         class="score-dropdown"
                       >
-                        <option value="">-</option>
-                        @for (score of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track score) {
+                        <option [value]="null">-</option>
+                        @for (
+                          score of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                          track score
+                        ) {
                           <option [value]="score">{{ score }}</option>
                         }
                       </select>

@@ -31,17 +31,17 @@ public class HandicapCalculatorService {
         }
 
         Player player = playerOpt.get();
-        List<PlayerScorecard> scorecards = playerScorecardRepository.findPlayerScorecardsByPlayerIdOrderByDate(playerId);
+        List<PlayerScorecard> scorecards = playerScorecardRepository
+                .findPlayerScorecardsByPlayerIdOrderByDate(playerId);
 
         if (scorecards.isEmpty()) {
             HandicapCalculatorDto dto = new HandicapCalculatorDto(
-                playerId,
-                player.getFirstName() + " " + player.getLastName(),
-                null,
-                0,
-                0,
-                false
-            );
+                    playerId,
+                    player.getFirstName() + " " + player.getLastName(),
+                    null,
+                    0,
+                    0,
+                    false);
             dto.setRoundDifferentials(new ArrayList<>());
             return dto;
         }
@@ -79,11 +79,11 @@ public class HandicapCalculatorService {
 
             // Get the best differentials based on WHS rules
             List<Double> differentials = rounds.stream()
-                .map(r -> r.scoreDifferential)
-                .filter(Objects::nonNull)
-                .sorted()
-                .limit(scoresToUse)
-                .collect(Collectors.toList());
+                    .map(r -> r.scoreDifferential)
+                    .filter(Objects::nonNull)
+                    .sorted()
+                    .limit(scoresToUse)
+                    .collect(Collectors.toList());
 
             usedDifferentials.addAll(differentials);
 
@@ -94,27 +94,25 @@ public class HandicapCalculatorService {
         }
 
         List<HandicapCalculatorDto.RoundDifferentialDto> roundDifferentials = rounds.stream()
-            .map(r -> new HandicapCalculatorDto.RoundDifferentialDto(
-                r.roundTeeTimeId,
-                r.roundDate.format(dateFormatter),
-                r.courseName,
-                r.courseRating,
-                r.slopeRating,
-                r.grossScore,
-                r.scoreDifferential,
-                r.holesPlayed,
-                usedDifferentials.contains(r.scoreDifferential)
-            ))
-            .collect(Collectors.toList());
+                .map(r -> new HandicapCalculatorDto.RoundDifferentialDto(
+                        r.roundTeeTimeId,
+                        r.roundDate.format(dateFormatter),
+                        r.courseName,
+                        r.courseRating,
+                        r.slopeRating,
+                        r.grossScore,
+                        r.scoreDifferential,
+                        r.holesPlayed,
+                        usedDifferentials.contains(r.scoreDifferential)))
+                .collect(Collectors.toList());
 
         HandicapCalculatorDto dto = new HandicapCalculatorDto(
-            playerId,
-            player.getFirstName() + " " + player.getLastName(),
-            handicap,
-            rounds.size(),
-            totalHoles,
-            eligible
-        );
+                playerId,
+                player.getFirstName() + " " + player.getLastName(),
+                handicap,
+                rounds.size(),
+                totalHoles,
+                eligible);
         dto.setRoundDifferentials(roundDifferentials);
 
         return dto;
@@ -125,7 +123,7 @@ public class HandicapCalculatorService {
 
         for (PlayerScorecard scorecard : scorecards) {
             String key = scorecard.getRoundTeeTime().getId() + "_" +
-                         scorecard.getRoundTeeTime().getTournamentRound().getId();
+                    scorecard.getRoundTeeTime().getTournamentRound().getId();
             roundsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(scorecard);
         }
 
@@ -148,13 +146,13 @@ public class HandicapCalculatorService {
 
         // Calculate gross score (sum of all holes' gross scores)
         Integer grossScore = roundScorecards.stream()
-            .mapToInt(ps -> ps.getGrossScore() != null ? ps.getGrossScore() : 0)
-            .sum();
+                .mapToInt(ps -> ps.getGrossScore() != null ? ps.getGrossScore() : 0)
+                .sum();
 
         // Get par total for this round
         int parTotal = roundScorecards.stream()
-            .mapToInt(ps -> ps.getHole().getPar() != null ? ps.getHole().getPar() : 0)
-            .sum();
+                .mapToInt(ps -> ps.getHole().getPar() != null ? ps.getHole().getPar() : 0)
+                .sum();
 
         // Calculate handicap strokes total for this round
         double handicapStrokesTotal = 0;
@@ -183,7 +181,8 @@ public class HandicapCalculatorService {
         }
 
         // Calculate score differential using WHS formula
-        // Score Differential = (Adjusted Gross Score - Course Rating) / Slope Rating × 113
+        // Score Differential = (Adjusted Gross Score - Course Rating) / Slope Rating ×
+        // 113
         double scoreDifferential = ((adjustedGrossScore - course.getRating()) / course.getSlope()) * WHS_CONSTANT;
 
         RoundData roundData = new RoundData();
@@ -200,17 +199,25 @@ public class HandicapCalculatorService {
     }
 
     /**
-     * Determine how many of the best score differentials to use for handicap calculation
+     * Determine how many of the best score differentials to use for handicap
+     * calculation
      * based on WHS Playing Conditions Calculation table
      */
     private int getScoresToUse(int numRounds) {
-        if (numRounds <= 5) return 1;
-        if (numRounds <= 8) return 2;
-        if (numRounds <= 11) return 2;
-        if (numRounds <= 14) return 3;
-        if (numRounds <= 16) return 4;
-        if (numRounds <= 18) return 5;
-        if (numRounds == 19) return 6;
+        if (numRounds <= 5)
+            return 1;
+        if (numRounds <= 8)
+            return 2;
+        if (numRounds <= 11)
+            return 2;
+        if (numRounds <= 14)
+            return 3;
+        if (numRounds <= 16)
+            return 4;
+        if (numRounds <= 18)
+            return 5;
+        if (numRounds == 19)
+            return 6;
         return 7; // 20+ rounds
     }
 
@@ -219,9 +226,15 @@ public class HandicapCalculatorService {
      * based on the number of rounds played (WHS table)
      */
     private double getPlayingConditionsAdjustment(int numRounds) {
-        if (numRounds == 3) return -2.0;
-        if (numRounds == 4) return -1.0;
-        return 0.0; // 5+ rounds
+        if (numRounds == 3)
+            return -2.0;
+        if (numRounds == 4)
+            return -1.0;
+        if (numRounds == 5)
+            return 0.0;
+        if (numRounds == 6)
+            return -1.0;
+        return 0.0; // 7+ rounds
     }
 
     private static class RoundData {

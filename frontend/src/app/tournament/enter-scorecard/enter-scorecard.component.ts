@@ -314,13 +314,25 @@ export class EnterScorecardComponent implements OnInit {
           this.playerIds().forEach(playerId => {
             const playerDetails = playerDetailsMap.get(playerId) || { firstName: '', lastName: '', handicap: 0 };
             const courseHandicap = this.calculateCourseHandicap(playerDetails.handicap, courseInfo, coursePar);
+            
+            // Pre-initialize scores object for ALL holes with empty values
+            const scores: any = {};
+            this.holes().forEach(hole => {
+              scores[hole.id] = {
+                scorecardId: undefined,
+                grossScore: undefined,
+                netScore: undefined,
+                gamePoints: undefined
+              };
+            });
+            
             playerScoresMap.set(playerId, {
               playerId,
               firstName: playerDetails.firstName,
               lastName: playerDetails.lastName,
               handicap: playerDetails.handicap,
               courseHandicap,
-              scores: {}
+              scores
             });
           });
           

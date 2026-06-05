@@ -366,7 +366,7 @@ export class EnterScorecardComponent implements OnInit {
             this.holes().forEach(hole => {
               scores[hole.id] = {
                 scorecardId: undefined,
-                grossScore: undefined,
+                grossScore: null,
                 netScore: undefined,
                 gamePoints: undefined
               };

@@ -9,11 +9,11 @@
       <select
         id="tournament-select"
         (change)="onTournamentChange(+$any($event.target).value)"
-        [value]="selectedTournamentId() || ''"
+        [value]="(selectedTournamentId() || '') + ''"
       >
         <option value="">Select Tournament</option>
         @for (tournament of tournaments(); track tournament.id) {
-          <option [value]="tournament.id">
+          <option [value]="tournament.id + ''">
             {{ tournament.year }} - {{ tournament.location }}
           </option>
         }
@@ -27,11 +27,11 @@
         <select
           id="round-select"
           (change)="onRoundChange(+$any($event.target).value)"
-          [value]="selectedRoundId() || ''"
+          [value]="(selectedRoundId() || '') + ''"
         >
           <option value="">Select Round</option>
           @for (round of rounds(); track round.id) {
-            <option [value]="round.id">
+            <option [value]="round.id + ''">
               {{ round.day | date: "MMM dd, yyyy" }} - {{ round.course?.name }}
             </option>
           }
@@ -46,11 +46,11 @@
         <select
           id="tee-time-select"
           (change)="onTeeTimeChange(+$any($event.target).value)"
-          [value]="selectedTeeTimeId() || ''"
+          [value]="(selectedTeeTimeId() || '') + ''"
         >
           <option value="">Select Tee Time</option>
           @for (teeTime of teeTimes(); track teeTime.id) {
-            <option [value]="teeTime.id">
+            <option [value]="teeTime.id + ''">
               {{ teeTime.teeTime | date: "HH:mm" }}
             </option>
           }

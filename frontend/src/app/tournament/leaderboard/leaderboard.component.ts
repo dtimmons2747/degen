@@ -68,11 +68,11 @@ interface RoundLeaderboardEntry {
             <select
               id="tournament-select"
               (change)="onTournamentChange(+$any($event.target).value)"
-              [value]="selectedTournamentId() || ''"
+              [value]="(selectedTournamentId() || '') + ''"
             >
               <option value="">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
-                <option [value]="tournament.id">
+                <option [value]="tournament.id + ''">
                   {{ tournament.year }} - {{ tournament.location }}
                 </option>
               }
@@ -142,11 +142,11 @@ interface RoundLeaderboardEntry {
             <select
               id="tournament-select-round"
               (change)="onTournamentChangeRound(+$any($event.target).value)"
-              [value]="selectedTournamentIdRound() || ''"
+              [value]="(selectedTournamentIdRound() || '') + ''"
             >
               <option value="">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
-                <option [value]="tournament.id">
+                <option [value]="tournament.id + ''">
                   {{ tournament.year }} - {{ tournament.location }}
                 </option>
               }
@@ -158,11 +158,11 @@ interface RoundLeaderboardEntry {
               <select
                 id="round-select"
                 (change)="onRoundChange(+$any($event.target).value)"
-                [value]="selectedRoundId() || ''"
+                [value]="(selectedRoundId() || '') + ''"
               >
                 <option value="">Select Round</option>
                 @for (round of tournamentRoundsRound(); track round.id) {
-                  <option [value]="round.id">
+                  <option [value]="round.id + ''">
                     {{ round.day | date: "MMM dd, yyyy" }}
                     @if (round.course?.name) {
                       - {{ round.course?.name }}

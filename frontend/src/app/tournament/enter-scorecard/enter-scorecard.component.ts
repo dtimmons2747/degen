@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, HostListener, effect } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -125,21 +125,6 @@ export class EnterScorecardComponent implements OnInit {
 
   constructor(private http: HttpClient) {
     this.checkIsMobile();
-    
-    // Debug effect - log all signal changes
-    effect(() => {
-      const tournamentId = this.selectedTournamentId();
-      const roundId = this.selectedRoundId();
-      const teeTimeId = this.selectedTeeTimeId();
-      console.log('[ENTER-SCORECARD DEBUG]', {
-        tournamentId,
-        roundId,
-        teeTimeId,
-        tournamentsCount: this.tournaments().length,
-        roundsCount: this.rounds().length,
-        teeTimesCount: this.teeTimes().length
-      });
-    });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -156,29 +141,22 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   loadTournaments() {
-    console.log('[ENTER-SCORECARD] loadTournaments called');
     this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => {
-        console.log('[ENTER-SCORECARD] Tournaments loaded:', data);
         this.tournaments.set(data);
         // Auto-select 2026 tournament and load current round
         const tournament2026 = data.find(t => t.year === 2026);
-        console.log('[ENTER-SCORECARD] Tournament 2026:', tournament2026);
         if (tournament2026) {
-          console.log('[ENTER-SCORECARD] Setting selectedTournamentId to:', tournament2026.id);
           this.selectedTournamentId.set(tournament2026.id);
           this.http.get<TournamentRound[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournament2026.id}`)
             .subscribe({
               next: (rounds) => {
-                console.log('[ENTER-SCORECARD] Rounds for 2026:', rounds);
                 // Sort by day
                 const sorted = rounds.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
                 this.rounds.set(sorted);
                 // Auto-select current round
                 const currentRound = this.findCurrentRound(sorted);
-                console.log('[ENTER-SCORECARD] Current round found:', currentRound);
                 if (currentRound) {
-                  console.log('[ENTER-SCORECARD] Setting selectedRoundId to:', currentRound.id);
                   this.selectedRoundId.set(currentRound.id);
                   this.onRoundChange(currentRound.id);
                 }
@@ -218,7 +196,6 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   onTournamentChange(tournamentId: number | null) {
-    console.log('[ENTER-SCORECARD] onTournamentChange called with:', tournamentId);
     this.selectedTournamentId.set(tournamentId);
     if (tournamentId) {
       this.rounds.set([]);
@@ -232,7 +209,6 @@ export class EnterScorecardComponent implements OnInit {
       this.http.get<TournamentRound[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournamentId}`)
         .subscribe({
           next: (data) => {
-            console.log('[ENTER-SCORECARD] Rounds loaded:', data);
             this.rounds.set(data);
           },
           error: (err) => {}
@@ -241,7 +217,6 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   onRoundChange(roundId: number | null) {
-    console.log('[ENTER-SCORECARD] onRoundChange called with:', roundId);
     this.selectedRoundId.set(roundId);
     if (roundId) {
       this.teeTimes.set([]);
@@ -261,7 +236,6 @@ export class EnterScorecardComponent implements OnInit {
       this.http.get<RoundTeeTime[]>(`${environment.apiUrl}/api/round-tee-times?roundId=${roundId}`)
         .subscribe({
           next: (data) => {
-            console.log('[ENTER-SCORECARD] Tee times loaded:', data);
             this.teeTimes.set(data);
           },
           error: (err) => {}
@@ -270,7 +244,6 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   onTeeTimeChange(teeTimeId: number | null) {
-    console.log('[ENTER-SCORECARD] onTeeTimeChange called with:', teeTimeId);
     this.selectedTeeTimeId.set(teeTimeId);
     if (teeTimeId) {
       const selectedTeeTime = this.teeTimes().find(t => t.id === teeTimeId);

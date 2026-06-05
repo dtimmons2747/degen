@@ -1,16 +1,6 @@
 <div class="scorecard-container">
   <h1>Enter Golf Scorecard</h1>
 
-  <!-- EMERGENCY DEBUG BOX - VERY VISIBLE -->
-  <div style="background-color: yellow; border: 3px solid red; padding: 15px; margin-bottom: 20px; font-weight: bold; font-size: 16px;">
-    <div>TOURNAMENT ID: {{ selectedTournamentId() }}</div>
-    <div>ROUND ID: {{ selectedRoundId() }}</div>
-    <div>TEE TIME ID: {{ selectedTeeTimeId() }}</div>
-    <div>Tournaments loaded: {{ tournaments().length }}</div>
-    <div>Rounds loaded: {{ rounds().length }}</div>
-    <div>Tee times loaded: {{ teeTimes().length }}</div>
-  </div>
-
   <!-- Cascading Selection Section -->
   <div class="controls">
     <!-- Tournament Selection -->
@@ -28,12 +18,7 @@
           <option [ngValue]="tournament.id">
             {{ tournament.year }} - {{ tournament.location }}
           </option>
-        }
-      </select>
-      <span style="margin-left: 10px; color: red; font-weight: bold"
-        >DEBUG: {{ selectedTournamentId() }}</span
-      >
-    </div>
+        }\n      </select>\n    </div>
 
     <!-- Round Selection (shown after tournament selected) -->
     @if (selectedTournamentId()) {
@@ -53,9 +38,6 @@
             </option>
           }
         </select>
-        <span style="margin-left: 10px; color: red; font-weight: bold"
-          >DEBUG: {{ selectedRoundId() }}</span
-        >
       </div>
     }
 
@@ -77,9 +59,6 @@
             </option>
           }
         </select>
-        <span style="margin-left: 10px; color: red; font-weight: bold"
-          >DEBUG: {{ selectedTeeTimeId() }}</span
-        >
       </div>
     }
   </div>

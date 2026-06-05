@@ -10,6 +10,7 @@
         id="tournament-select"
         [ngModel]="selectedTournamentId()"
         (ngModelChange)="onTournamentChange($event)"
+        [compareWith]="compareIds"
         class="tournament-select"
       >
         <option [ngValue]="null">Select Tournament</option>
@@ -29,6 +30,7 @@
           id="round-select"
           [ngModel]="selectedRoundId()"
           (ngModelChange)="onRoundChange($event)"
+          [compareWith]="compareIds"
           class="round-select"
         >
           <option [ngValue]="null">Select Round</option>
@@ -48,8 +50,7 @@
         <select
           id="tee-time-select"
           [ngModel]="selectedTeeTimeId()"
-          (ngModelChange)="onTeeTimeChange($event)"
-          class="tee-time-select"
+          (ngModelChange)="onTeeTimeChange($event)"          [compareWith]="compareIds"          class="tee-time-select"
         >
           <option [ngValue]="null">Select Tee Time</option>
           @for (teeTime of teeTimes(); track teeTime.id) {

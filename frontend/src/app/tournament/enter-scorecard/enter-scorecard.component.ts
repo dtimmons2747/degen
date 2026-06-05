@@ -597,6 +597,10 @@ export class EnterScorecardComponent implements OnInit {
     }
   }
 
+  compareIds(id1: number | null, id2: number | null): boolean {
+    return id1 === id2;
+  }
+
   getPlayerScore(playerId: number, holeId: number): number | undefined {
     const playerScore = this.playerScores().find(ps => ps.playerId === playerId);
     return playerScore?.scores[holeId]?.grossScore;

@@ -69,6 +69,7 @@ interface RoundLeaderboardEntry {
               id="tournament-select"
               [ngModel]="selectedTournamentId()"
               (ngModelChange)="onTournamentChange($event)"
+              [compareWith]="compareIds"
             >
               <option [ngValue]="null">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
@@ -143,6 +144,7 @@ interface RoundLeaderboardEntry {
               id="tournament-select-round"
               [ngModel]="selectedTournamentIdRound()"
               (ngModelChange)="onTournamentChangeRound($event)"
+              [compareWith]="compareIds"
             >
               <option [ngValue]="null">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
@@ -159,6 +161,7 @@ interface RoundLeaderboardEntry {
                 id="round-select"
                 [ngModel]="selectedRoundId()"
                 (ngModelChange)="onRoundChange($event)"
+                [compareWith]="compareIds"
               >
                 <option [ngValue]="null">Select Round</option>
                 @for (round of tournamentRoundsRound(); track round.id) {
@@ -453,6 +456,10 @@ export class LeaderboardComponent {
         this.isLoading.set(false);
       }
     });
+  }
+
+  compareIds(id1: number | null, id2: number | null): boolean {
+    return id1 === id2;
   }
 
   getRoundPoints(entry: LeaderboardEntry, roundId: number): string {

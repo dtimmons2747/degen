@@ -195,7 +195,7 @@ export class EnterScorecardComponent implements OnInit {
     return rounds[rounds.length - 1];
   }
 
-  onTournamentChange(tournamentId: number) {
+  onTournamentChange(tournamentId: number | null) {
     this.selectedTournamentId.set(tournamentId);
     if (tournamentId) {
       this.rounds.set([]);
@@ -216,7 +216,7 @@ export class EnterScorecardComponent implements OnInit {
     }
   }
 
-  onRoundChange(roundId: number) {
+  onRoundChange(roundId: number | null) {
     this.selectedRoundId.set(roundId);
     if (roundId) {
       this.teeTimes.set([]);
@@ -243,7 +243,7 @@ export class EnterScorecardComponent implements OnInit {
     }
   }
 
-  onTeeTimeChange(teeTimeId: number) {
+  onTeeTimeChange(teeTimeId: number | null) {
     this.selectedTeeTimeId.set(teeTimeId);
     if (teeTimeId) {
       const selectedTeeTime = this.teeTimes().find(t => t.id === teeTimeId);

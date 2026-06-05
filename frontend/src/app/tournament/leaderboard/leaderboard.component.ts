@@ -67,8 +67,8 @@ interface RoundLeaderboardEntry {
             <label for="tournament-select">Tournament:</label>
             <select
               id="tournament-select"
-              [(ngModel)]="selectedTournamentId"
-              (change)="onTournamentChange(selectedTournamentId() || 0)"
+              [ngModel]="selectedTournamentId()"
+              (ngModelChange)="onTournamentChange($event)"
             >
               <option [ngValue]="null">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
@@ -141,12 +141,12 @@ interface RoundLeaderboardEntry {
             <label for="tournament-select-round">Tournament:</label>
             <select
               id="tournament-select-round"
-              [(ngModel)]=\"selectedTournamentIdRound\"
-              (change)=\"onTournamentChangeRound(selectedTournamentIdRound() || 0)\"
+              [ngModel]="selectedTournamentIdRound()"
+              (ngModelChange)="onTournamentChangeRound($event)"
             >
-              <option [ngValue]=\"null\">Select Tournament</option>
+              <option [ngValue]="null">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
-                <option [ngValue]=\"tournament.id\">
+                <option [ngValue]="tournament.id">
                   {{ tournament.year }} - {{ tournament.location }}
                 </option>
               }
@@ -157,8 +157,8 @@ interface RoundLeaderboardEntry {
               <label for="round-select">Round:</label>
               <select
                 id="round-select"
-                [(ngModel)]="selectedRoundId"
-                (change)="onRoundChange(selectedRoundId() || 0)"
+                [ngModel]="selectedRoundId()"
+                (ngModelChange)="onRoundChange($event)"
               >
                 <option [ngValue]="null">Select Round</option>
                 @for (round of tournamentRoundsRound(); track round.id) {
@@ -326,7 +326,7 @@ export class LeaderboardComponent {
   }
 
   // Tournament view methods
-  onTournamentChange(tournamentId: number) {
+  onTournamentChange(tournamentId: number | null) {
     this.selectedTournamentId.set(tournamentId);
     this.tournamentRounds.set([]);
     this.leaderboardData.set([]);
@@ -366,7 +366,7 @@ export class LeaderboardComponent {
   }
 
   // Round view methods
-  onTournamentChangeRound(tournamentId: number) {
+  onTournamentChangeRound(tournamentId: number | null) {
     this.selectedTournamentIdRound.set(tournamentId);
     this.tournamentRoundsRound.set([]);
     this.selectedRoundId.set(null);
@@ -423,7 +423,7 @@ export class LeaderboardComponent {
     return rounds[rounds.length - 1];
   }
 
-  onRoundChange(roundId: number) {
+  onRoundChange(roundId: number | null) {
     this.selectedRoundId.set(roundId);
     this.roundLeaderboardData.set([]);
 

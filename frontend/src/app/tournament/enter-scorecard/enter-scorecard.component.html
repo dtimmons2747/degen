@@ -8,8 +8,8 @@
       <label for="tournament-select">Tournament:</label>
       <select
         id="tournament-select"
-        [(ngModel)]="selectedTournamentId"
-        (change)="onTournamentChange(selectedTournamentId() || 0)"
+        [ngModel]="selectedTournamentId()"
+        (ngModelChange)="onTournamentChange($event)"
         class="tournament-select"
       >
         <option [ngValue]="null">Select Tournament</option>
@@ -27,8 +27,8 @@
         <label for="round-select">Round:</label>
         <select
           id="round-select"
-          [(ngModel)]="selectedRoundId"
-          (change)="onRoundChange(selectedRoundId() || 0)"
+          [ngModel]="selectedRoundId()"
+          (ngModelChange)="onRoundChange($event)"
           class="round-select"
         >
           <option [ngValue]="null">Select Round</option>
@@ -47,8 +47,8 @@
         <label for="tee-time-select">Tee Time:</label>
         <select
           id="tee-time-select"
-          [(ngModel)]="selectedTeeTimeId"
-          (change)="onTeeTimeChange(selectedTeeTimeId() || 0)"
+          [ngModel]="selectedTeeTimeId()"
+          (ngModelChange)="onTeeTimeChange($event)"
           class="tee-time-select"
         >
           <option [ngValue]="null">Select Tee Time</option>

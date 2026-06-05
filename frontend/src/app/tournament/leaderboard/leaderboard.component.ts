@@ -67,12 +67,12 @@ interface RoundLeaderboardEntry {
             <label for="tournament-select">Tournament:</label>
             <select
               id="tournament-select"
-              (change)="onTournamentChange(+$any($event.target).value)"
-              [value]="(selectedTournamentId() || '') + ''"
+              [(ngModel)]="selectedTournamentId"
+              (change)="onTournamentChange(selectedTournamentId() || 0)"
             >
-              <option value="">Select Tournament</option>
+              <option [ngValue]="null">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
-                <option [value]="tournament.id + ''">
+                <option [ngValue]="tournament.id">
                   {{ tournament.year }} - {{ tournament.location }}
                 </option>
               }
@@ -141,12 +141,12 @@ interface RoundLeaderboardEntry {
             <label for="tournament-select-round">Tournament:</label>
             <select
               id="tournament-select-round"
-              (change)="onTournamentChangeRound(+$any($event.target).value)"
-              [value]="(selectedTournamentIdRound() || '') + ''"
+              [(ngModel)]=\"selectedTournamentIdRound\"
+              (change)=\"onTournamentChangeRound(selectedTournamentIdRound() || 0)\"
             >
-              <option value="">Select Tournament</option>
+              <option [ngValue]=\"null\">Select Tournament</option>
               @for (tournament of tournaments(); track tournament.id) {
-                <option [value]="tournament.id + ''">
+                <option [ngValue]=\"tournament.id\">
                   {{ tournament.year }} - {{ tournament.location }}
                 </option>
               }
@@ -157,12 +157,12 @@ interface RoundLeaderboardEntry {
               <label for="round-select">Round:</label>
               <select
                 id="round-select"
-                (change)="onRoundChange(+$any($event.target).value)"
-                [value]="(selectedRoundId() || '') + ''"
+                [(ngModel)]="selectedRoundId"
+                (change)="onRoundChange(selectedRoundId() || 0)"
               >
-                <option value="">Select Round</option>
+                <option [ngValue]="null">Select Round</option>
                 @for (round of tournamentRoundsRound(); track round.id) {
-                  <option [value]="round.id + ''">
+                  <option [ngValue]="round.id">
                     {{ round.day | date: "MMM dd, yyyy" }}
                     @if (round.course?.name) {
                       - {{ round.course?.name }}

@@ -8,12 +8,13 @@
       <label for="tournament-select">Tournament:</label>
       <select
         id="tournament-select"
-        (change)="onTournamentChange(+$any($event.target).value)"
-        [value]="(selectedTournamentId() || '') + ''"
+        [(ngModel)]="selectedTournamentId"
+        (change)="onTournamentChange(selectedTournamentId() || 0)"
+        class="tournament-select"
       >
-        <option value="">Select Tournament</option>
+        <option [ngValue]="null">Select Tournament</option>
         @for (tournament of tournaments(); track tournament.id) {
-          <option [value]="tournament.id + ''">
+          <option [ngValue]="tournament.id">
             {{ tournament.year }} - {{ tournament.location }}
           </option>
         }
@@ -26,12 +27,13 @@
         <label for="round-select">Round:</label>
         <select
           id="round-select"
-          (change)="onRoundChange(+$any($event.target).value)"
-          [value]="(selectedRoundId() || '') + ''"
+          [(ngModel)]="selectedRoundId"
+          (change)="onRoundChange(selectedRoundId() || 0)"
+          class="round-select"
         >
-          <option value="">Select Round</option>
+          <option [ngValue]="null">Select Round</option>
           @for (round of rounds(); track round.id) {
-            <option [value]="round.id + ''">
+            <option [ngValue]="round.id">
               {{ round.day | date: "MMM dd, yyyy" }} - {{ round.course?.name }}
             </option>
           }
@@ -45,10 +47,11 @@
         <label for="tee-time-select">Tee Time:</label>
         <select
           id="tee-time-select"
-          (change)="onTeeTimeChange(+$any($event.target).value)"
-          [value]="(selectedTeeTimeId() || '') + ''"
+          [(ngModel)]="selectedTeeTimeId"
+          (change)="onTeeTimeChange(selectedTeeTimeId() || 0)"
+          class="tee-time-select"
         >
-          <option value="">Select Tee Time</option>
+          <option [ngValue]="null">Select Tee Time</option>
           @for (teeTime of teeTimes(); track teeTime.id) {
             <option [value]="teeTime.id + ''">
               {{ teeTime.teeTime | date: "HH:mm" }}

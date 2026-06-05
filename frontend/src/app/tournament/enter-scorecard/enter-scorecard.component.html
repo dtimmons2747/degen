@@ -18,7 +18,9 @@
           <option [ngValue]="tournament.id">
             {{ tournament.year }} - {{ tournament.location }}
           </option>
-        }\n      </select>\n    </div>
+        }
+      </select>
+    </div>
 
     <!-- Round Selection (shown after tournament selected) -->
     @if (selectedTournamentId()) {

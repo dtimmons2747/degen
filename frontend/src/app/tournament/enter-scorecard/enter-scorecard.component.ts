@@ -144,9 +144,55 @@ export class EnterScorecardComponent implements OnInit {
     this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => {
         this.tournaments.set(data);
+        // Auto-select 2026 tournament and load current round
+        const tournament2026 = data.find(t => t.year === 2026);
+        if (tournament2026) {
+          this.selectedTournamentId.set(tournament2026.id);
+          this.http.get<TournamentRound[]>(`${environment.apiUrl}/api/tournament-rounds?tournamentId=${tournament2026.id}`)
+            .subscribe({
+              next: (rounds) => {
+                // Sort by day
+                const sorted = rounds.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
+                this.rounds.set(sorted);
+                // Auto-select current round
+                const currentRound = this.findCurrentRound(sorted);
+                if (currentRound) {
+                  this.selectedRoundId.set(currentRound.id);
+                  this.onRoundChange(currentRound.id);
+                }
+              },
+              error: (err) => {}
+            });
+        }
       },
       error: (err) => {}
     });
+  }
+
+  private findCurrentRound(rounds: TournamentRound[]): TournamentRound | null {
+    if (rounds.length === 0) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Check for exact date match
+    for (const round of rounds) {
+      const roundDate = new Date(round.day);
+      roundDate.setHours(0, 0, 0, 0);
+      if (roundDate.getTime() === today.getTime()) {
+        return round;
+      }
+    }
+
+    // If before all rounds, return first
+    const firstRoundDate = new Date(rounds[0].day);
+    firstRoundDate.setHours(0, 0, 0, 0);
+    if (today.getTime() < firstRoundDate.getTime()) {
+      return rounds[0];
+    }
+
+    // If after all rounds, return last
+    return rounds[rounds.length - 1];
   }
 
   onTournamentChange(tournamentId: number) {

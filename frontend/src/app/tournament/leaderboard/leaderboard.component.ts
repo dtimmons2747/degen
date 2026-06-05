@@ -307,10 +307,15 @@ export class LeaderboardComponent {
     this.http.get<Tournament[]>(`${environment.apiUrl}/api/tournaments`).subscribe({
       next: (data) => {
         this.tournaments.set(data);
-        // Auto-select first tournament for round view
-        if (data.length > 0) {
-          this.selectedTournamentIdRound.set(data[0].id);
-          this.loadTournamentRoundsForRound(data[0].id);
+        // Auto-select 2026 tournament for round view and load it
+        const tournament2026 = data.find(t => t.year === 2026);
+        if (tournament2026) {
+          this.selectedTournamentIdRound.set(tournament2026.id);
+          this.loadTournamentRoundsForRound(tournament2026.id);
+          // Also auto-select 2026 for tournament view
+          this.selectedTournamentId.set(tournament2026.id);
+          this.loadTournamentRounds(tournament2026.id);
+          this.loadLeaderboard(tournament2026.id);
         }
       },
       error: (err) => {
@@ -393,9 +398,12 @@ export class LeaderboardComponent {
   }
 
   private findCurrentRound(rounds: TournamentRound[]): TournamentRound | null {
+    if (rounds.length === 0) return null;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Check for exact date match
     for (const round of rounds) {
       const roundDate = new Date(round.day);
       roundDate.setHours(0, 0, 0, 0);
@@ -403,7 +411,16 @@ export class LeaderboardComponent {
         return round;
       }
     }
-    return null;
+
+    // If before all rounds, return first
+    const firstRoundDate = new Date(rounds[0].day);
+    firstRoundDate.setHours(0, 0, 0, 0);
+    if (today.getTime() < firstRoundDate.getTime()) {
+      return rounds[0];
+    }
+
+    // If after all rounds, return last
+    return rounds[rounds.length - 1];
   }
 
   onRoundChange(roundId: number) {

@@ -78,6 +78,7 @@ interface RoundLeaderboardEntry {
                 </option>
               }
             </select>
+            <span style="margin-left: 10px; color: red; font-weight: bold;">DEBUG: {{ selectedTournamentId() }}</span>
           </div>
         </div>
 
@@ -153,6 +154,7 @@ interface RoundLeaderboardEntry {
                 </option>
               }
             </select>
+            <span style="margin-left: 10px; color: red; font-weight: bold;">DEBUG: {{ selectedTournamentIdRound() }}</span>
           </div>
           @if (tournamentRoundsRound().length > 0) {
             <div class="control-group">
@@ -173,6 +175,7 @@ interface RoundLeaderboardEntry {
                   </option>
                 }
               </select>
+              <span style="margin-left: 10px; color: red; font-weight: bold;">DEBUG: {{ selectedRoundId() }}</span>
             </div>
           }
         </div>

@@ -20,6 +20,7 @@
           </option>
         }
       </select>
+      <span style="margin-left: 10px; color: red; font-weight: bold;">DEBUG: {{ selectedTournamentId() }}</span>
     </div>
 
     <!-- Round Selection (shown after tournament selected) -->
@@ -40,6 +41,7 @@
             </option>
           }
         </select>
+        <span style="margin-left: 10px; color: red; font-weight: bold;">DEBUG: {{ selectedRoundId() }}</span>
       </div>
     }
 
@@ -50,7 +52,9 @@
         <select
           id="tee-time-select"
           [ngModel]="selectedTeeTimeId()"
-          (ngModelChange)="onTeeTimeChange($event)"          [compareWith]="compareIds"          class="tee-time-select"
+          (ngModelChange)="onTeeTimeChange($event)"
+          [compareWith]="compareIds"
+          class="tee-time-select"
         >
           <option [ngValue]="null">Select Tee Time</option>
           @for (teeTime of teeTimes(); track teeTime.id) {
@@ -59,6 +63,7 @@
             </option>
           }
         </select>
+        <span style="margin-left: 10px; color: red; font-weight: bold;">DEBUG: {{ selectedTeeTimeId() }}</span>
       </div>
     }
   </div>

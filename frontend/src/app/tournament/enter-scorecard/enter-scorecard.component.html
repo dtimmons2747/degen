@@ -206,7 +206,9 @@
                     @if (isMobile()) {
                       <select
                         [(ngModel)]="playerScore.scores[hole.id].grossScore"
-                        (change)="updateScore(playerScore.playerId, hole, $event)"
+                        (change)="
+                          updateScore(playerScore.playerId, hole, $event)
+                        "
                         class="score-dropdown"
                       >
                         <option [value]="null">-</option>
@@ -287,7 +289,9 @@
                     @if (isMobile()) {
                       <select
                         [(ngModel)]="playerScore.scores[hole.id].grossScore"
-                        (change)="updateScore(playerScore.playerId, hole, $event)"
+                        (change)="
+                          updateScore(playerScore.playerId, hole, $event)
+                        "
                         class="score-dropdown"
                       >
                         <option [value]="null">-</option>

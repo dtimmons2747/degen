@@ -243,69 +243,60 @@ export class EnterScorecardComponent implements OnInit {
   }
 
   private loadScorecards(teeTimeId: number) {
-    // First, load all players from the tee_time and their tournament handicaps
     const allPlayerIds = this.playerIds();
+    if (allPlayerIds.length === 0) {
+      this.playerScores.set([]);
+      return;
+    }
+
     const tournamentId = this.selectedTournamentId();
-    const playerDetailsMap = new Map<number, { firstName: string; lastName: string; handicap: number }>();
-    
-    // Get course info for handicap calculation
     const selectedRound = this.rounds().find(r => r.id === this.selectedRoundId());
     const courseInfo = selectedRound?.course;
-    
-    // Load player details for all players in the tee_time
-    let loadedCount = 0;
-    allPlayerIds.forEach(playerId => {
-      // First get player name
-      this.http.get<any>(`${environment.apiUrl}/api/players/${playerId}`)
-        .subscribe({
-          next: (player) => {
-            // Then get tournament-specific handicap
-            if (tournamentId) {
-              this.http.get<any[]>(`${environment.apiUrl}/api/tournament-handicaps?playerId=${playerId}&tournamentId=${tournamentId}`)
-                .subscribe({
-                  next: (handicapDataList) => {
-                    const handicap = handicapDataList && handicapDataList.length > 0 ? handicapDataList[0].handicap : 0;
-                    playerDetailsMap.set(playerId, {
-                      firstName: player.firstName || '',
-                      lastName: player.lastName || '',
-                      handicap: handicap || 0
-                    });
-                    loadedCount++;
-                    if (loadedCount === allPlayerIds.length) {
-                      this.loadScorecardsWithPlayerDetails(teeTimeId, playerDetailsMap, courseInfo);
-                    }
-                  },
-                  error: (err) => {
-                    playerDetailsMap.set(playerId, {
-                      firstName: player.firstName || '',
-                      lastName: player.lastName || '',
-                      handicap: 0
-                    });
-                    loadedCount++;
-                    if (loadedCount === allPlayerIds.length) {
-                      this.loadScorecardsWithPlayerDetails(teeTimeId, playerDetailsMap, courseInfo);
-                    }
-                  }
-                });
-            } else {
-              playerDetailsMap.set(playerId, {
-                firstName: player.firstName || '',
-                lastName: player.lastName || '',
-                handicap: 0
-              });
-              loadedCount++;
-              if (loadedCount === allPlayerIds.length) {
-                this.loadScorecardsWithPlayerDetails(teeTimeId, playerDetailsMap, courseInfo);
-              }
-            }
-          },
-          error: (err) => {
-            loadedCount++;
-            if (loadedCount === allPlayerIds.length) {
-              this.loadScorecardsWithPlayerDetails(teeTimeId, playerDetailsMap, courseInfo);
-            }
-          }
-        });
+
+    // Load all player details in parallel using Promise.all
+    Promise.all(
+      allPlayerIds.map(playerId =>
+        Promise.all([
+          this.loadPlayerDetails(playerId),
+          tournamentId ? this.loadPlayerHandicap(playerId, tournamentId) : Promise.resolve(0)
+        ]).then(([player, handicap]) => ({
+          playerId,
+          firstName: player.firstName || '',
+          lastName: player.lastName || '',
+          handicap: handicap || 0
+        }))
+      )
+    ).then(playerDetailsArray => {
+      const playerDetailsMap = new Map(playerDetailsArray.map(p => [p.playerId, p]));
+      this.loadScorecardsWithPlayerDetails(teeTimeId, playerDetailsMap, courseInfo);
+    }).catch(err => {
+      // Fallback: load with empty details
+      const playerDetailsMap = new Map<number, any>();
+      allPlayerIds.forEach(pid => {
+        playerDetailsMap.set(pid, { playerId: pid, firstName: '', lastName: '', handicap: 0 });
+      });
+      this.loadScorecardsWithPlayerDetails(teeTimeId, playerDetailsMap, courseInfo);
+    });
+  }
+
+  private loadPlayerDetails(playerId: number): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.http.get<any>(`${environment.apiUrl}/api/players/${playerId}`).subscribe({
+        next: (data) => resolve(data),
+        error: (err) => resolve({ firstName: '', lastName: '' }) // Fallback
+      });
+    });
+  }
+
+  private loadPlayerHandicap(playerId: number, tournamentId: number): Promise<number> {
+    return new Promise((resolve, reject) => {
+      this.http.get<any[]>(`${environment.apiUrl}/api/tournament-handicaps?playerId=${playerId}&tournamentId=${tournamentId}`).subscribe({
+        next: (data) => {
+          const handicap = data && data.length > 0 ? data[0].handicap : 0;
+          resolve(handicap || 0);
+        },
+        error: (err) => resolve(0) // Fallback
+      });
     });
   }
 

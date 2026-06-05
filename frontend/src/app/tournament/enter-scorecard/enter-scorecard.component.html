@@ -213,7 +213,7 @@
                       >
                         <option [value]="null">-</option>
                         @for (
-                          score of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                          score of getScoreOptions();
                           track score
                         ) {
                           <option [value]="score">{{ score }}</option>
@@ -254,7 +254,7 @@
               }
               <div class="column-out">
                 <div class="score-total">
-                  <span class="gross-total">{{
+                  <span class="gross-total">{{ 
                     getPlayerNineTotal(playerScore.playerId, 1, 9)
                   }}</span>
                   <span class="net-total">{{
@@ -296,7 +296,7 @@
                       >
                         <option [value]="null">-</option>
                         @for (
-                          score of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                          score of getScoreOptions();
                           track score
                         ) {
                           <option [value]="score">{{ score }}</option>
@@ -337,7 +337,7 @@
               }
               <div class="column-in">
                 <div class="score-total">
-                  <span class="gross-total">{{
+                  <span class="gross-total">{{ 
                     getPlayerNineTotal(playerScore.playerId, 10, 18)
                   }}</span>
                   <span class="net-total">{{

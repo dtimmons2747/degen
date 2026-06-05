@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -123,7 +123,7 @@ export class EnterScorecardComponent implements OnInit {
     return ids;
   });
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {
+  constructor(private http: HttpClient) {
     this.checkIsMobile();
   }
 
@@ -352,7 +352,6 @@ export class EnterScorecardComponent implements OnInit {
           });
 
           this.playerScores.set(Array.from(playerScoresMap.values()));
-          this.cdr.detectChanges();
           
           // Recalculate team scores now that player scores are loaded
           this.updateTeamScores();
@@ -389,10 +388,6 @@ export class EnterScorecardComponent implements OnInit {
 
   getScoringType(): string {
     return this.selectedRound()?.scoringType?.scoringTypeName || '';
-  }
-
-  getScoreOptions(): number[] {
-    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   }
 
   /**

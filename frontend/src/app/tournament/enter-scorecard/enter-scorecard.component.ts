@@ -246,34 +246,20 @@ export class EnterScorecardComponent implements OnInit {
   onTeeTimeChange(teeTimeId: number | null) {
     this.selectedTeeTimeId.set(teeTimeId);
     if (teeTimeId) {
-      console.log('[TeeTime] onTeeTimeChange called with:', teeTimeId, 'type:', typeof teeTimeId);
-      console.log('[TeeTime] Available teeTimes:', this.teeTimes());
-      
-      const selectedTeeTime = this.teeTimes().find(t => {
-        console.log('[TeeTime] Comparing t.id=', t.id, 'type:', typeof t.id, 'with teeTimeId=', teeTimeId, 'match?', t.id === teeTimeId);
-        return t.id === teeTimeId;
-      });
-      
-      console.log('[TeeTime] Selected tee time found:', selectedTeeTime);
-      console.log('[TeeTime] selectedCourseId():', this.selectedCourseId());
-      console.log('[TeeTime] playerIds():', this.playerIds());
+      const selectedTeeTime = this.teeTimes().find(t => t.id === teeTimeId);
       
       if (selectedTeeTime) {
         const courseId = this.selectedCourseId();
         if (courseId) {
-          console.log('[TeeTime] Loading holes for courseId:', courseId);
           // Load holes FIRST, then load scorecards once holes are loaded
           this.loadHolesForCourseAndThenScorecards(courseId, teeTimeId);
         } else {
-          console.log('[TeeTime] No courseId, just loading scorecards');
           this.holes.set([]);
           this.loadScorecards(teeTimeId);
         }
 
         // Load teams for inter-group scoring
         this.loadTeams(teeTimeId);
-      } else {
-        console.log('[TeeTime] ERROR: selectedTeeTime is undefined!');
       }
     }
   }
@@ -305,11 +291,8 @@ export class EnterScorecardComponent implements OnInit {
 
   private loadScorecards(teeTimeId: number) {
     const allPlayerIds = this.playerIds();
-    console.log('[LoadScorecards] Called with teeTimeId:', teeTimeId);
-    console.log('[LoadScorecards] playerIds():', allPlayerIds);
     
     if (allPlayerIds.length === 0) {
-      console.log('[LoadScorecards] No player IDs found, returning');
       this.playerScores.set([]);
       return;
     }
@@ -317,10 +300,6 @@ export class EnterScorecardComponent implements OnInit {
     const tournamentId = this.selectedTournamentId();
     const selectedRound = this.rounds().find(r => r.id === this.selectedRoundId());
     const courseInfo = selectedRound?.course;
-    
-    console.log('[LoadScorecards] tournamentId:', tournamentId);
-    console.log('[LoadScorecards] selectedRound:', selectedRound);
-    console.log('[LoadScorecards] courseInfo:', courseInfo);
 
     // Load all player details in parallel using Promise.all
     Promise.all(

@@ -81,19 +81,54 @@
     "
   >
     <strong style="color: #c62828">DEBUG INFO:</strong><br />
-    <strong style="color: #d32f2f">Selected TeeTime ID: {{ selectedTeeTimeId() }}</strong><br />
-    <span style="color: #d32f2f">Selected TeeTime Object: {{ selectedTeeTime() }}</span><br />
-    Player IDs: {{ playerIds() }}<br />
+    <strong style="color: #d32f2f"
+      >Selected TeeTime ID: {{ selectedTeeTimeId() }}</strong
+    ><br />
+    <strong style="color: #d32f2f"
+      >Selected TeeTime ID: {{ selectedTeeTimeId() }}</strong
+    ><br />
+    <span style="color: #d32f2f"
+      >Selected TeeTime Object: {{ selectedTeeTime() | json }}</span
+    ><br />
+    Player IDs: {{ playerIds() | json }}<br />
     Course ID: {{ selectedCourseId() }}<br />
     Holes loaded: {{ holes().length }}<br />
     Player Scores: {{ playerScores().length }}<br />
     <br />
     <strong>Available Tee Times ({{ teeTimes().length }}):</strong><br />
     @for (tt of teeTimes(); track tt.id) {
-      <div style="margin-left: 10px; margin-top: 5px; padding: 5px; background: rgba(0,0,0,0.05);">
-        ID: {{ tt.id }} | Time: {{ tt.teeTime | date: "HH:mm" }} | Players:
-        {{ tt.player1Id }},{{ tt.player2Id }},{{ tt.player3Id }},{{ tt.player4Id }}
-      </div>
+      @if (tt.id === selectedTeeTimeId()) {
+        <div
+          style="
+            margin-left: 10px;
+            margin-top: 5px;
+            padding: 5px;
+            background: #ffcdd2;
+            border: 2px solid red;
+            font-weight: bold;
+            color: red;
+          "
+        >
+          ✓ MATCH - ID: {{ tt.id }} | Time: {{ tt.teeTime | date: "HH:mm" }} | Players:
+          {{ tt.player1Id }},{{ tt.player2Id }},{{ tt.player3Id }},{{
+            tt.player4Id
+          }}
+        </div>
+      } @else {
+        <div
+          style="
+            margin-left: 10px;
+            margin-top: 5px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.05);
+          "
+        >
+          ID: {{ tt.id }} | Time: {{ tt.teeTime | date: "HH:mm" }} | Players:
+          {{ tt.player1Id }},{{ tt.player2Id }},{{ tt.player3Id }},{{
+            tt.player4Id
+          }}
+        </div>
+      }
     }
   </div>
 

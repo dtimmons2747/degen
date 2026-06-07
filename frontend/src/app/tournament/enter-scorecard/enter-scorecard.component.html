@@ -74,17 +74,27 @@
       margin: 15px 0;
       border-radius: 4px;
       font-family: monospace;
-      font-size: 12px;
-      line-height: 1.6;
+      font-size: 11px;
+      line-height: 1.5;
+      max-height: 400px;
+      overflow-y: auto;
     "
   >
     <strong style="color: #c62828">DEBUG INFO:</strong><br />
-    TeeTime ID: {{ selectedTeeTimeId() }}<br />
+    <strong style="color: #d32f2f">Selected TeeTime ID: {{ selectedTeeTimeId() }}</strong><br />
+    <span style="color: #d32f2f">Selected TeeTime Object: {{ selectedTeeTime() }}</span><br />
     Player IDs: {{ playerIds() }}<br />
     Course ID: {{ selectedCourseId() }}<br />
     Holes loaded: {{ holes().length }}<br />
     Player Scores: {{ playerScores().length }}<br />
-    Tee Times available: {{ teeTimes().length }}<br />
+    <br />
+    <strong>Available Tee Times ({{ teeTimes().length }}):</strong><br />
+    @for (tt of teeTimes(); track tt.id) {
+      <div style="margin-left: 10px; margin-top: 5px; padding: 5px; background: rgba(0,0,0,0.05);">
+        ID: {{ tt.id }} | Time: {{ tt.teeTime | date: "HH:mm" }} | Players:
+        {{ tt.player1Id }},{{ tt.player2Id }},{{ tt.player3Id }},{{ tt.player4Id }}
+      </div>
+    }
   </div>
 
   <!-- Scorecard Grid (shown after tee time selected) -->

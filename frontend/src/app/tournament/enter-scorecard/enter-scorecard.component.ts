@@ -246,8 +246,15 @@ export class EnterScorecardComponent implements OnInit {
   onTeeTimeChange(teeTimeId: number | null) {
     this.selectedTeeTimeId.set(teeTimeId);
     if (teeTimeId) {
-      const selectedTeeTime = this.teeTimes().find(t => t.id === teeTimeId);
-      console.log('[TeeTime] Selected tee time:', selectedTeeTime);
+      console.log('[TeeTime] onTeeTimeChange called with:', teeTimeId, 'type:', typeof teeTimeId);
+      console.log('[TeeTime] Available teeTimes:', this.teeTimes());
+      
+      const selectedTeeTime = this.teeTimes().find(t => {
+        console.log('[TeeTime] Comparing t.id=', t.id, 'type:', typeof t.id, 'with teeTimeId=', teeTimeId, 'match?', t.id === teeTimeId);
+        return t.id === teeTimeId;
+      });
+      
+      console.log('[TeeTime] Selected tee time found:', selectedTeeTime);
       console.log('[TeeTime] selectedCourseId():', this.selectedCourseId());
       console.log('[TeeTime] playerIds():', this.playerIds());
       
@@ -265,6 +272,8 @@ export class EnterScorecardComponent implements OnInit {
 
         // Load teams for inter-group scoring
         this.loadTeams(teeTimeId);
+      } else {
+        console.log('[TeeTime] ERROR: selectedTeeTime is undefined!');
       }
     }
   }

@@ -247,12 +247,18 @@ export class EnterScorecardComponent implements OnInit {
     this.selectedTeeTimeId.set(teeTimeId);
     if (teeTimeId) {
       const selectedTeeTime = this.teeTimes().find(t => t.id === teeTimeId);
+      console.log('[TeeTime] Selected tee time:', selectedTeeTime);
+      console.log('[TeeTime] selectedCourseId():', this.selectedCourseId());
+      console.log('[TeeTime] playerIds():', this.playerIds());
+      
       if (selectedTeeTime) {
         const courseId = this.selectedCourseId();
         if (courseId) {
+          console.log('[TeeTime] Loading holes for courseId:', courseId);
           // Load holes FIRST, then load scorecards once holes are loaded
           this.loadHolesForCourseAndThenScorecards(courseId, teeTimeId);
         } else {
+          console.log('[TeeTime] No courseId, just loading scorecards');
           this.holes.set([]);
           this.loadScorecards(teeTimeId);
         }
@@ -290,7 +296,11 @@ export class EnterScorecardComponent implements OnInit {
 
   private loadScorecards(teeTimeId: number) {
     const allPlayerIds = this.playerIds();
+    console.log('[LoadScorecards] Called with teeTimeId:', teeTimeId);
+    console.log('[LoadScorecards] playerIds():', allPlayerIds);
+    
     if (allPlayerIds.length === 0) {
+      console.log('[LoadScorecards] No player IDs found, returning');
       this.playerScores.set([]);
       return;
     }
@@ -298,6 +308,10 @@ export class EnterScorecardComponent implements OnInit {
     const tournamentId = this.selectedTournamentId();
     const selectedRound = this.rounds().find(r => r.id === this.selectedRoundId());
     const courseInfo = selectedRound?.course;
+    
+    console.log('[LoadScorecards] tournamentId:', tournamentId);
+    console.log('[LoadScorecards] selectedRound:', selectedRound);
+    console.log('[LoadScorecards] courseInfo:', courseInfo);
 
     // Load all player details in parallel using Promise.all
     Promise.all(

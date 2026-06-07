@@ -56,7 +56,7 @@
         >
           <option [ngValue]="null">Select Tee Time</option>
           @for (teeTime of teeTimes(); track teeTime.id) {
-            <option [value]="teeTime.id + ''">
+            <option [ngValue]="teeTime.id">
               {{ teeTime.teeTime | date: "HH:mm" }}
             </option>
           }
@@ -66,14 +66,25 @@
   </div>
 
   <!-- DEBUG BOX -->
-  <div style="background-color: #ffebee; border: 2px solid #c62828; padding: 12px; margin: 15px 0; border-radius: 4px; font-family: monospace; font-size: 12px; line-height: 1.6;">
-    <strong style="color: #c62828;">DEBUG INFO:</strong><br>
-    TeeTime ID: {{ selectedTeeTimeId() }}<br>
-    Player IDs: {{ playerIds() }}<br>
-    Course ID: {{ selectedCourseId() }}<br>
-    Holes loaded: {{ holes().length }}<br>
-    Player Scores: {{ playerScores().length }}<br>
-    Tee Times available: {{ teeTimes().length }}<br>
+  <div
+    style="
+      background-color: #ffebee;
+      border: 2px solid #c62828;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    "
+  >
+    <strong style="color: #c62828">DEBUG INFO:</strong><br />
+    TeeTime ID: {{ selectedTeeTimeId() }}<br />
+    Player IDs: {{ playerIds() }}<br />
+    Course ID: {{ selectedCourseId() }}<br />
+    Holes loaded: {{ holes().length }}<br />
+    Player Scores: {{ playerScores().length }}<br />
+    Tee Times available: {{ teeTimes().length }}<br />
   </div>
 
   <!-- Scorecard Grid (shown after tee time selected) -->

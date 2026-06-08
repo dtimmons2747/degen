@@ -601,6 +601,10 @@ export class EnterScorecardComponent implements OnInit {
     return id1 === id2;
   }
 
+  getCurrentDateString(): string {
+    return new Date().toLocaleDateString('en-CA');
+  }
+
   getPlayerScore(playerId: number, holeId: number): number | undefined {
     const playerScore = this.playerScores().find(ps => ps.playerId === playerId);
     return playerScore?.scores[holeId]?.grossScore;

@@ -1,21 +1,6 @@
 <div class="scorecard-container">
   <h1>Enter Golf Scorecard</h1>
 
-  <!-- DEBUG: Show date comparison info -->
-  <div style="background: yellow; padding: 10px; margin: 10px 0; border: 2px solid red; font-weight: bold;">
-    <div>TODAY: {{ getCurrentDateString() }}</div>
-    <div>SELECTED ROUND: {{ selectedRoundId() }}</div>
-    <div>SELECTED ROUND DATE: {{ selectedRound()?.day | date: "yyyy-MM-dd" }}</div>
-    <div>AVAILABLE ROUNDS:</div>
-    <ul>
-      @for (round of rounds(); track round.id) {
-        <li>
-          Round {{ round.id }}: {{ round.day | date: "yyyy-MM-dd" }}
-        </li>
-      }
-    </ul>
-  </div>
-
   <!-- Cascading Selection Section -->
   <div class="controls">
     <!-- Tournament Selection -->

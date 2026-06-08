@@ -679,7 +679,7 @@ public class LeaderboardService {
         // Collect all players in this round and their scores
         Map<Long, Integer> playerScoresRelativeToPar = new HashMap<>();
         Map<Long, Integer> playerTotalPar = new HashMap<>();
-        Map<Long, Integer> playerHolesCompleted = new HashMap<>();
+        Map<Long, Set<Long>> playerHolesCompleted = new HashMap<>();
         Map<Long, String> playerNames = new HashMap<>();
 
         for (RoundTeeTime teeTime : teeTimes) {
@@ -705,7 +705,11 @@ public class LeaderboardService {
                             playerTotalPar.getOrDefault(playerId, 0) + scorecard.getHole().getPar());
                 }
 
-                playerHolesCompleted.put(playerId, playerHolesCompleted.getOrDefault(playerId, 0) + 1);
+                // Track unique holes completed
+                if (scorecard.getHole() != null) {
+                    playerHolesCompleted.putIfAbsent(playerId, new HashSet<>());
+                    playerHolesCompleted.get(playerId).add(scorecard.getHole().getId());
+                }
             }
         }
 
@@ -721,7 +725,7 @@ public class LeaderboardService {
             Integer totalNetScore = playerScoresRelativeToPar.getOrDefault(playerId, 0);
             Integer totalPar = playerTotalPar.getOrDefault(playerId, 0);
             Integer scoreRelativeToPar = totalNetScore - totalPar; // e.g., 66 - 70 = -4
-            Integer thru = playerHolesCompleted.getOrDefault(playerId, 0);
+            Integer thru = playerHolesCompleted.containsKey(playerId) ? playerHolesCompleted.get(playerId).size() : 0;
 
             // Get round points from tournament leaderboard
             LeaderboardEntryDto tourEntry = tournamentLeaderboardMap.get(playerId);

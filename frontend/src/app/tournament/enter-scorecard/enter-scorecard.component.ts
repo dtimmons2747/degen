@@ -172,24 +172,23 @@ export class EnterScorecardComponent implements OnInit {
   private findCurrentRound(rounds: TournamentRound[]): TournamentRound | null {
     if (rounds.length === 0) return null;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Get today's date as YYYY-MM-DD string in local timezone
+    const now = new Date();
+    const todayString = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split('T')[0];
 
-    // Check for exact date match - parse date string manually to avoid timezone issues
+    // Check for exact date match using date strings
     for (const round of rounds) {
-      const dateStr = round.day.split('T')[0]; // Get date part only (YYYY-MM-DD)
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const roundDate = new Date(year, month - 1, day, 0, 0, 0, 0);
-      if (roundDate.getTime() === today.getTime()) {
+      const roundDateString = round.day.split('T')[0];
+      if (roundDateString === todayString) {
         return round;
       }
     }
 
     // If before all rounds, return first
-    const firstDateStr = rounds[0].day.split('T')[0];
-    const [firstYear, firstMonth, firstDay] = firstDateStr.split('-').map(Number);
-    const firstRoundDate = new Date(firstYear, firstMonth - 1, firstDay, 0, 0, 0, 0);
-    if (today.getTime() < firstRoundDate.getTime()) {
+    const firstRoundDateString = rounds[0].day.split('T')[0];
+    if (todayString < firstRoundDateString) {
       return rounds[0];
     }
 

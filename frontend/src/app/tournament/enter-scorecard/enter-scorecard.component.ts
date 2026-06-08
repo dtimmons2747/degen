@@ -175,18 +175,20 @@ export class EnterScorecardComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Check for exact date match
+    // Check for exact date match - parse date string manually to avoid timezone issues
     for (const round of rounds) {
-      const roundDate = new Date(round.day);
-      roundDate.setHours(0, 0, 0, 0);
+      const dateStr = round.day.split('T')[0]; // Get date part only (YYYY-MM-DD)
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const roundDate = new Date(year, month - 1, day, 0, 0, 0, 0);
       if (roundDate.getTime() === today.getTime()) {
         return round;
       }
     }
 
     // If before all rounds, return first
-    const firstRoundDate = new Date(rounds[0].day);
-    firstRoundDate.setHours(0, 0, 0, 0);
+    const firstDateStr = rounds[0].day.split('T')[0];
+    const [firstYear, firstMonth, firstDay] = firstDateStr.split('-').map(Number);
+    const firstRoundDate = new Date(firstYear, firstMonth - 1, firstDay, 0, 0, 0, 0);
     if (today.getTime() < firstRoundDate.getTime()) {
       return rounds[0];
     }

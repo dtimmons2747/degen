@@ -403,11 +403,8 @@ export class LeaderboardComponent {
   private findCurrentRound(rounds: TournamentRound[]): TournamentRound | null {
     if (rounds.length === 0) return null;
 
-    // Get today's date as YYYY-MM-DD string in local timezone
-    const now = new Date();
-    const todayString = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-      .toISOString()
-      .split('T')[0];
+    // Get today's date as YYYY-MM-DD string in local timezone (simplest approach)
+    const todayString = new Date().toLocaleDateString('en-CA');
 
     // Check for exact date match using date strings
     for (const round of rounds) {

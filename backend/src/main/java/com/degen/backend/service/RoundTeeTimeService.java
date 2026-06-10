@@ -164,12 +164,13 @@ public class RoundTeeTimeService {
         return obj1.equals(obj2);
     }
 
+    @Transactional
     public void deleteRoundTeeTime(Long id) {
         // Check if there are any scorecards for this tee time
         if (playerScorecardService.hasScorecards(id)) {
             throw new RuntimeException("Cannot delete tee time: scorecards exist for this tee time");
         }
-        
+
         try {
             // Delete associated round handicaps
             roundHandicapRepository.deleteByRoundTeeTimeId(id);

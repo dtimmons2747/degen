@@ -165,13 +165,16 @@ public class RoundTeeTimeService {
     }
 
     public void deleteRoundTeeTime(Long id) {
+        // Check if there are any scorecards for this tee time
+        if (playerScorecardService.hasScorecards(id)) {
+            throw new RuntimeException("Cannot delete tee time: scorecards exist for this tee time");
+        }
+        
         try {
-            // Check if there are any scorecards for this tee time
-            if (playerScorecardService.hasScorecards(id)) {
-                throw new RuntimeException("Cannot delete tee time: scorecards exist for this tee time");
-            }
             // Delete associated round handicaps
             roundHandicapRepository.deleteByRoundTeeTimeId(id);
+            // Delete associated round teams
+            roundTeamRepository.deleteByRoundTeeTimeId(id);
             // Delete the tee time
             roundTeeTimeRepository.deleteById(id);
         } catch (Exception e) {

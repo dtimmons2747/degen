@@ -523,8 +523,9 @@ public class TeamGamePointsService {
      * Eagle: 8 pts, Birdie: 4 pts, Par: 2 pts, Bogey: 0 pts, Double Bogey or worse: -2 pts
      */
     private List<Integer> calculateStablefordGamePoints(List<TeamHoleScore> sortedByScore, Hole hole) {
-        List<Integer> points = new ArrayList<>();
-
+        // First, calculate raw Stableford points for each team based on their score vs par
+        List<Integer> stablefordPoints = new ArrayList<>();
+        
         for (TeamHoleScore teamScore : sortedByScore) {
             int strokes = teamScore.getNetScore() != null ? teamScore.getNetScore() : 999;
             int par = hole.getPar() != null ? hole.getPar() : 4;
@@ -548,11 +549,64 @@ public class TeamGamePointsService {
                 pts = -2;
             }
 
-            points.add(pts);
+            stablefordPoints.add(pts);
         }
 
-        return points;
+        // Now rank teams by their Stableford points (highest to lowest)
+        // and distribute competitive ranking points with tie handling
+        List<Integer> rankingPoints = new ArrayList<>();
+        int numTeams = sortedByScore.size();
+        
+        // Create list of (index, stablefordPoints) for ranking
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < numTeams; i++) {
+            indices.add(i);
+        }
+        
+        // Sort indices by stableford points descending (better scores first)
+        indices.sort((i, j) -> Integer.compare(stablefordPoints.get(j), stablefordPoints.get(i)));
+        
+        // Assign ranking points based on position, handling ties
+        int rank = 1;
+        for (int i = 0; i < numTeams; ) {
+            // Find all teams tied at this rank
+            int currentScore = stablefordPoints.get(indices.get(i));
+            List<Integer> tiedIndices = new ArrayList<>();
+            tiedIndices.add(i);
+            
+            while (i + tiedIndices.size() < numTeams && 
+                   stablefordPoints.get(indices.get(i + tiedIndices.size())).equals(currentScore)) {
+                tiedIndices.add(i + tiedIndices.size());
+            }
+            
+            // Calculate average points for ties
+            // Points for this rank: numTeams - rank + 1
+            double pointsForRank = numTeams - rank + 1;
+            double pointsForNextRank = numTeams - (rank + tiedIndices.size()) + 1;
+            double avgPoints = (pointsForRank + pointsForNextRank - 1) / 2.0;
+            
+            // Assign to all tied teams (round to nearest integer, or could use half-points)
+            for (Integer idx : tiedIndices) {
+                rankingPoints.add((int) Math.round(avgPoints));
+            }
+            
+            rank += tiedIndices.size();
+            i += tiedIndices.size();
+        }
+
+        // Create result list in original order
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < numTeams; i++) {
+            result.add(0);
+        }
+        
+        for (int i = 0; i < numTeams; i++) {
+            result.set(indices.get(i), rankingPoints.get(i));
+        }
+
+        return result;
     }
+
 
     /**
      * Calculate Stableford game points for players within each team

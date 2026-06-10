@@ -7,6 +7,7 @@ import com.degen.backend.repository.TeamHoleScoreRepository;
 import com.degen.backend.service.TeamGamePointsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -114,6 +115,7 @@ public class TeamGamePointsController {
      * Save team game points for a specific team and hole
      * Used for Stableford scoring where points are calculated as scores are entered
      */
+    @Transactional
     @PutMapping("/save-game-points/{roundTeamId}/{holeId}")
     public ResponseEntity<Map<String, String>> saveTeamGamePoints(
             @PathVariable Long roundTeamId,
@@ -130,7 +132,8 @@ public class TeamGamePointsController {
                     .orElseThrow(() -> new IllegalArgumentException("Round team not found with id: " + roundTeamId));
 
             TeamHoleScore teamHoleScore = teamHoleScoreRepository.findByRoundTeamIdAndHoleId(roundTeamId, holeId)
-                    .orElseThrow(() -> new IllegalArgumentException("Team hole score not found for team " + roundTeamId + " and hole " + holeId));
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Team hole score not found for team " + roundTeamId + " and hole " + holeId));
 
             teamHoleScore.setGamePoints(gamePoints);
             teamHoleScoreRepository.save(teamHoleScore);

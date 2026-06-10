@@ -12,10 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface RoundTeamRepository extends JpaRepository<RoundTeam, Long> {
-    
+
     @Query("SELECT rt FROM RoundTeam rt WHERE rt.roundTeeTime.id = :roundTeeTimeId")
     List<RoundTeam> findByRoundTeeTimeId(@Param("roundTeeTimeId") Long roundTeeTimeId);
-    
+
     @Modifying
     @Query("DELETE FROM RoundTeam rt WHERE rt.roundTeeTime.id = :roundTeeTimeId")
     void deleteByRoundTeeTimeId(@Param("roundTeeTimeId") Long roundTeeTimeId);

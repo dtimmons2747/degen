@@ -37,32 +37,32 @@ public class TeamGamePointsService {
             // Get the tournament round to access the course and game
             TournamentRound tournamentRound = null;
             List<RoundTeeTime> roundTeeTimes = roundTeeTimeRepository.findAllByTournamentRoundId(tournamentRoundId);
-            
+
             if (roundTeeTimes.isEmpty()) {
                 throw new IllegalStateException("No tee times found for round " + tournamentRoundId);
             }
-            
+
             // Get round from first tee time
             tournamentRound = roundTeeTimes.get(0).getTournamentRound();
             if (tournamentRound == null || tournamentRound.getCourse() == null) {
                 throw new IllegalStateException("No course found for round " + tournamentRoundId);
             }
-            
+
             // Check if this is an Individual game
             if (tournamentRound.getGame() != null && tournamentRound.getGame().getId() == 4L) {
                 // Individual game - handle separately
                 calculateAndSaveIndividualGamePoints(tournamentRoundId);
                 return;
             }
-            
+
             // Team-based game logic (Nines, 2-Man Aggregate, etc.)
             // Get holes for this round's course
             List<Hole> holes = holeRepository.findByCourseId(tournamentRound.getCourse().getId());
-            
+
             if (holes.isEmpty()) {
                 throw new IllegalStateException("No holes found for course " + tournamentRound.getCourse().getId());
             }
-            
+
             // Generate team hole scores for each tee time
             for (RoundTeeTime teeTime : roundTeeTimes) {
                 generateTeamHoleScores(teeTime.getId());
@@ -74,11 +74,11 @@ public class TeamGamePointsService {
                 List<RoundTeam> teamsForTeeTime = roundTeamRepository.findByRoundTeeTimeId(teeTime.getId());
                 allTeamsInRound.addAll(teamsForTeeTime);
             }
-            
+
             if (allTeamsInRound.isEmpty()) {
                 throw new IllegalStateException("No teams found for round " + tournamentRoundId);
             }
-            
+
             // Validate that all teams have complete scorecards for all holes
             validateAllTeamsHaveCompleteScorecardsForAllHolesRoundLevel(allTeamsInRound, holes);
 
@@ -90,11 +90,12 @@ public class TeamGamePointsService {
             // Calculate player game points for Nines (id 4) and Stableford (id 3)
             // 2-Man Aggregate (Stroke, id 1) is team-only competition
             Long scoringTypeId = (tournamentRound.getScoringType() != null)
-                ? tournamentRound.getScoringType().getId()
-                : null;
-            
+                    ? tournamentRound.getScoringType().getId()
+                    : null;
+
             if (scoringTypeId != null && (scoringTypeId == 4L || scoringTypeId == 3L)) {
-                // For each hole, calculate player points within each team (Nines and Stableford)
+                // For each hole, calculate player points within each team (Nines and
+                // Stableford)
                 for (Hole hole : holes) {
                     if (scoringTypeId == 4L) {
                         calculatePlayerPointsForHole(allTeamsInRound, hole);
@@ -131,8 +132,8 @@ public class TeamGamePointsService {
             }
 
             Long scoringTypeId = (tournamentRound.getScoringType() != null)
-                ? tournamentRound.getScoringType().getId()
-                : null;
+                    ? tournamentRound.getScoringType().getId()
+                    : null;
 
             // If Stroke (id=1), no game points needed for Individual game
             if (scoringTypeId == null || scoringTypeId == 1L) {
@@ -151,7 +152,8 @@ public class TeamGamePointsService {
             Set<Long> playerIds = new java.util.HashSet<>();
 
             for (RoundTeeTime teeTime : roundTeeTimes) {
-                List<PlayerScorecard> teeTimeScorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId());
+                List<PlayerScorecard> teeTimeScorecards = playerScorecardRepository
+                        .findByRoundTeeTimeId(teeTime.getId());
                 for (PlayerScorecard sc : teeTimeScorecards) {
                     allPlayerScorecards.add(sc);
                     Long pId = sc.getPlayer().getId();
@@ -181,31 +183,32 @@ public class TeamGamePointsService {
     /**
      * Validate that all players have complete scorecards for all holes
      */
-    private void validateAllPlayersHaveCompleteScorecardsForAllHolesIndividual(Set<Long> playerIds, 
-                                                                               List<PlayerScorecard> allScorecards,
-                                                                               List<Hole> holes) {
+    private void validateAllPlayersHaveCompleteScorecardsForAllHolesIndividual(Set<Long> playerIds,
+            List<PlayerScorecard> allScorecards,
+            List<Hole> holes) {
         StringBuilder missingScores = new StringBuilder();
 
         for (Long playerId : playerIds) {
             for (Hole hole : holes) {
                 boolean hasScore = allScorecards.stream()
-                    .filter(sc -> sc.getPlayer().getId().equals(playerId))
-                    .filter(sc -> sc.getHole().getId().equals(hole.getId()))
-                    .anyMatch(sc -> sc.getGrossScore() != null);
+                        .filter(sc -> sc.getPlayer().getId().equals(playerId))
+                        .filter(sc -> sc.getHole().getId().equals(hole.getId()))
+                        .anyMatch(sc -> sc.getGrossScore() != null);
 
                 if (!hasScore) {
                     missingScores.append("Player ")
-                        .append(playerId)
-                        .append(" is missing score for hole ")
-                        .append(hole.getHoleNumber())
-                        .append(". ");
+                            .append(playerId)
+                            .append(" is missing score for hole ")
+                            .append(hole.getHoleNumber())
+                            .append(". ");
                 }
             }
         }
 
         if (missingScores.length() > 0) {
             throw new IllegalStateException("Cannot calculate game points. " + missingScores.toString() +
-                    "All " + playerIds.size() + " players must have complete scores for all holes before game points can be calculated.");
+                    "All " + playerIds.size()
+                    + " players must have complete scores for all holes before game points can be calculated.");
         }
     }
 
@@ -214,7 +217,8 @@ public class TeamGamePointsService {
      * For each hole, find all players with best (lowest) net score,
      * and divide 1 by that count. Each gets 1/count points (rounded to 2 decimals)
      */
-    private void calculateSplitSkinsGamePoints(Long tournamentRoundId, List<RoundTeeTime> roundTeeTimes, TournamentRound tournamentRound) {
+    private void calculateSplitSkinsGamePoints(Long tournamentRoundId, List<RoundTeeTime> roundTeeTimes,
+            TournamentRound tournamentRound) {
         // Get holes for this course
         List<Hole> holes = holeRepository.findByCourseId(tournamentRound.getCourse().getId());
         if (holes.isEmpty()) {
@@ -236,9 +240,9 @@ public class TeamGamePointsService {
         for (Hole hole : holes) {
             // Get all player scorecards for this hole
             List<PlayerScorecard> scoresForHole = allPlayerScorecards.stream()
-                .filter(ps -> ps.getHole() != null && ps.getHole().getId().equals(hole.getId()))
-                .filter(ps -> ps.getNetScore() != null)
-                .collect(Collectors.toList());
+                    .filter(ps -> ps.getHole() != null && ps.getHole().getId().equals(hole.getId()))
+                    .filter(ps -> ps.getNetScore() != null)
+                    .collect(Collectors.toList());
 
             if (scoresForHole.isEmpty()) {
                 continue; // No scores for this hole
@@ -246,9 +250,9 @@ public class TeamGamePointsService {
 
             // Find best (lowest) net score
             Integer bestScore = scoresForHole.stream()
-                .map(PlayerScorecard::getNetScore)
-                .min(Integer::compareTo)
-                .orElse(null);
+                    .map(PlayerScorecard::getNetScore)
+                    .min(Integer::compareTo)
+                    .orElse(null);
 
             if (bestScore == null) {
                 continue;
@@ -256,8 +260,8 @@ public class TeamGamePointsService {
 
             // Count how many players have the best score
             List<PlayerScorecard> winnersForHole = scoresForHole.stream()
-                .filter(ps -> ps.getNetScore().equals(bestScore))
-                .collect(Collectors.toList());
+                    .filter(ps -> ps.getNetScore().equals(bestScore))
+                    .collect(Collectors.toList());
 
             int winnerCount = winnersForHole.size();
             double pointsPerWinner = Math.round(100.0 / winnerCount) / 100.0; // 1/count, rounded to 2 decimals
@@ -283,12 +287,12 @@ public class TeamGamePointsService {
             }
             TournamentRound tournamentRound = roundTeeTimes.get(0).getTournamentRound();
             Long scoringTypeId = (tournamentRound.getScoringType() != null)
-                ? tournamentRound.getScoringType().getId()
-                : null;
+                    ? tournamentRound.getScoringType().getId()
+                    : null;
 
             // Get all team hole scores for this hole in this round
             List<TeamHoleScore> teamScoresForHole = teamHoleScoreRepository
-                .findByTournamentRoundIdAndHoleId(tournamentRoundId, hole.getId());
+                    .findByTournamentRoundIdAndHoleId(tournamentRoundId, hole.getId());
 
             if (teamScoresForHole.isEmpty()) {
                 return;
@@ -296,8 +300,9 @@ public class TeamGamePointsService {
 
             // Sort by net score
             List<TeamHoleScore> sortedByScore = teamScoresForHole.stream()
-                .sorted(Comparator.comparingInt(ths -> ths.getNetScore() != null ? ths.getNetScore() : Integer.MAX_VALUE))
-                .collect(Collectors.toList());
+                    .sorted(Comparator
+                            .comparingInt(ths -> ths.getNetScore() != null ? ths.getNetScore() : Integer.MAX_VALUE))
+                    .collect(Collectors.toList());
 
             // Calculate points based on scoring type
             List<Integer> gamePoints;
@@ -349,8 +354,9 @@ public class TeamGamePointsService {
 
                 for (Long playerId : teamPlayerIds) {
                     Optional<PlayerScorecard> scorecard = playerScorecardRepository
-                        .findByRoundTeeTimeIdAndPlayerIdAndHoleId(team.getRoundTeeTime().getId(), playerId, hole.getId());
-                    
+                            .findByRoundTeeTimeIdAndPlayerIdAndHoleId(team.getRoundTeeTime().getId(), playerId,
+                                    hole.getId());
+
                     if (scorecard.isPresent() && scorecard.get().getNetScore() != null) {
                         teamScorecardsForHole.add(scorecard.get());
                     }
@@ -363,8 +369,9 @@ public class TeamGamePointsService {
 
                 // Sort players by net score (ascending = best first)
                 List<PlayerScorecard> sortedByScore = teamScorecardsForHole.stream()
-                    .sorted(Comparator.comparingInt(ps -> ps.getNetScore() != null ? ps.getNetScore() : Integer.MAX_VALUE))
-                    .collect(Collectors.toList());
+                        .sorted(Comparator
+                                .comparingInt(ps -> ps.getNetScore() != null ? ps.getNetScore() : Integer.MAX_VALUE))
+                        .collect(Collectors.toList());
 
                 // Calculate player points within this team (3 players = 5/3/1)
                 List<Integer> playerPoints = calculatePlayerGamePoints(sortedByScore);
@@ -382,7 +389,8 @@ public class TeamGamePointsService {
     }
 
     /**
-     * Calculate player game points based on net scores (within a team on a single hole)
+     * Calculate player game points based on net scores (within a team on a single
+     * hole)
      * Uses same 5/3/1 scoring as team competition
      * Handles ties by splitting points evenly
      */
@@ -487,22 +495,23 @@ public class TeamGamePointsService {
             }
 
             // Only load scorecards for this specific tee time (not all scorecards)
-            List<PlayerScorecard> teamScorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId()).stream()
-                .filter(sc -> teamPlayerIds.contains(sc.getPlayer().getId()))
-                .filter(sc -> sc.getHole().getId().equals(hole.getId()))
-                .collect(Collectors.toList());
+            List<PlayerScorecard> teamScorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId())
+                    .stream()
+                    .filter(sc -> teamPlayerIds.contains(sc.getPlayer().getId()))
+                    .filter(sc -> sc.getHole().getId().equals(hole.getId()))
+                    .collect(Collectors.toList());
 
             // Find best net score for this team on this hole
             Integer bestNetScore = teamScorecards.stream()
-                .map(PlayerScorecard::getNetScore)
-                .filter(Objects::nonNull)
-                .min(Integer::compareTo)
-                .orElse(null);
+                    .map(PlayerScorecard::getNetScore)
+                    .filter(Objects::nonNull)
+                    .min(Integer::compareTo)
+                    .orElse(null);
 
             if (bestNetScore != null) {
                 // Create or update team hole score
                 Optional<TeamHoleScore> existing = teamHoleScoreRepository
-                    .findByRoundTeamIdAndHoleId(team.getId(), hole.getId());
+                        .findByRoundTeamIdAndHoleId(team.getId(), hole.getId());
 
                 TeamHoleScore teamScore = existing.orElseGet(TeamHoleScore::new);
                 teamScore.setRoundTeam(team);
@@ -513,19 +522,22 @@ public class TeamGamePointsService {
                 teamHoleScoreRepository.save(teamScore);
             }
         } catch (Exception e) {
-            System.out.println("Error generating team hole score for team " + team.getId() + ", hole " + hole.getId() + ": " + e.getMessage());
+            System.out.println("Error generating team hole score for team " + team.getId() + ", hole " + hole.getId()
+                    + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
      * Calculate Stableford game points for teams based on net score vs par
-     * Eagle: 8 pts, Birdie: 4 pts, Par: 2 pts, Bogey: 0 pts, Double Bogey or worse: -2 pts
+     * Eagle: 8 pts, Birdie: 4 pts, Par: 2 pts, Bogey: 0 pts, Double Bogey or worse:
+     * -2 pts
      */
     private List<Integer> calculateStablefordGamePoints(List<TeamHoleScore> sortedByScore, Hole hole) {
-        // First, calculate raw Stableford points for each team based on their score vs par
+        // First, calculate raw Stableford points for each team based on their score vs
+        // par
         List<Integer> stablefordPoints = new ArrayList<>();
-        
+
         for (TeamHoleScore teamScore : sortedByScore) {
             int strokes = teamScore.getNetScore() != null ? teamScore.getNetScore() : 999;
             int par = hole.getPar() != null ? hole.getPar() : 4;
@@ -556,40 +568,41 @@ public class TeamGamePointsService {
         // and distribute competitive ranking points with tie handling
         List<Integer> rankingPoints = new ArrayList<>();
         int numTeams = sortedByScore.size();
-        
+
         // Create list of (index, stablefordPoints) for ranking
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < numTeams; i++) {
             indices.add(i);
         }
-        
+
         // Sort indices by stableford points descending (better scores first)
         indices.sort((i, j) -> Integer.compare(stablefordPoints.get(j), stablefordPoints.get(i)));
-        
+
         // Assign ranking points based on position, handling ties
         int rank = 1;
-        for (int i = 0; i < numTeams; ) {
+        for (int i = 0; i < numTeams;) {
             // Find all teams tied at this rank
             int currentScore = stablefordPoints.get(indices.get(i));
             List<Integer> tiedIndices = new ArrayList<>();
             tiedIndices.add(i);
-            
-            while (i + tiedIndices.size() < numTeams && 
-                   stablefordPoints.get(indices.get(i + tiedIndices.size())).equals(currentScore)) {
+
+            while (i + tiedIndices.size() < numTeams &&
+                    stablefordPoints.get(indices.get(i + tiedIndices.size())).equals(currentScore)) {
                 tiedIndices.add(i + tiedIndices.size());
             }
-            
+
             // Calculate average points for ties
-            // Points for this rank: numTeams - rank + 1
-            double pointsForRank = numTeams - rank + 1;
-            double pointsForNextRank = numTeams - (rank + tiedIndices.size()) + 1;
-            double avgPoints = (pointsForRank + pointsForNextRank - 1) / 2.0;
-            
-            // Assign to all tied teams (round to nearest integer, or could use half-points)
+            // Sum points for all tied positions and divide by number of tied teams
+            // Example: 2 teams tied for 1st out of 6: (6 + 5) / 2 = 5.5
+            double startPoints = numTeams - rank + 1;
+            double endPoints = numTeams - rank - tiedIndices.size() + 2;
+            double avgPoints = (startPoints + endPoints) / 2.0;
+
+            // Assign to all tied teams
             for (Integer idx : tiedIndices) {
                 rankingPoints.add((int) Math.round(avgPoints));
             }
-            
+
             rank += tiedIndices.size();
             i += tiedIndices.size();
         }
@@ -599,14 +612,13 @@ public class TeamGamePointsService {
         for (int i = 0; i < numTeams; i++) {
             result.add(0);
         }
-        
+
         for (int i = 0; i < numTeams; i++) {
             result.set(indices.get(i), rankingPoints.get(i));
         }
 
         return result;
     }
-
 
     /**
      * Calculate Stableford game points for players within each team
@@ -636,8 +648,9 @@ public class TeamGamePointsService {
 
                 for (Long playerId : teamPlayerIds) {
                     Optional<PlayerScorecard> scorecard = playerScorecardRepository
-                        .findByRoundTeeTimeIdAndPlayerIdAndHoleId(team.getRoundTeeTime().getId(), playerId, hole.getId());
-                    
+                            .findByRoundTeeTimeIdAndPlayerIdAndHoleId(team.getRoundTeeTime().getId(), playerId,
+                                    hole.getId());
+
                     if (scorecard.isPresent() && scorecard.get().getNetScore() != null) {
                         teamScorecardsForHole.add(scorecard.get());
                     }
@@ -739,7 +752,7 @@ public class TeamGamePointsService {
      */
     public Map<Long, Double> calculateStrokeRankings(Long tournamentRoundId) {
         Map<Long, Double> teamRankings = new HashMap<>();
-        
+
         try {
             // Get all tee times for this round
             List<RoundTeeTime> roundTeeTimes = roundTeeTimeRepository.findAllByTournamentRoundId(tournamentRoundId);
@@ -754,18 +767,19 @@ public class TeamGamePointsService {
 
             for (RoundTeeTime teeTime : roundTeeTimes) {
                 List<RoundTeam> teams = roundTeamRepository.findByRoundTeeTimeId(teeTime.getId());
-                
+
                 for (RoundTeam team : teams) {
                     teamMap.put(team.getId(), team);
-                    
+
                     // Sum all net scores for this team
-                    List<PlayerScorecard> teamScorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId()).stream()
-                        .filter(sc -> isPlayerOnTeam(team, sc.getPlayer().getId()))
-                        .collect(Collectors.toList());
+                    List<PlayerScorecard> teamScorecards = playerScorecardRepository
+                            .findByRoundTeeTimeId(teeTime.getId()).stream()
+                            .filter(sc -> isPlayerOnTeam(team, sc.getPlayer().getId()))
+                            .collect(Collectors.toList());
 
                     int teamTotal = teamScorecards.stream()
-                        .mapToInt(sc -> sc.getNetScore() != null ? sc.getNetScore() : 0)
-                        .sum();
+                            .mapToInt(sc -> sc.getNetScore() != null ? sc.getNetScore() : 0)
+                            .sum();
 
                     teamTotals.put(team.getId(), teamTotal);
                 }
@@ -778,8 +792,8 @@ public class TeamGamePointsService {
 
             // Sort teams by total score (ascending = best)
             List<Map.Entry<Long, Integer>> sortedTeams = teamTotals.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(Collectors.toList());
+                    .sorted(Map.Entry.comparingByValue())
+                    .collect(Collectors.toList());
 
             int numTeams = sortedTeams.size();
             int position = 0;
@@ -788,7 +802,7 @@ public class TeamGamePointsService {
             while (i < sortedTeams.size()) {
                 int currentScore = sortedTeams.get(i).getValue();
                 List<Long> tiedTeams = new ArrayList<>();
-                
+
                 // Find all teams with the same score
                 while (i < sortedTeams.size() && sortedTeams.get(i).getValue() == currentScore) {
                     tiedTeams.add(sortedTeams.get(i).getKey());
@@ -800,13 +814,13 @@ public class TeamGamePointsService {
                 // Position is 0-based, so 1st place is at position 0, gets numTeams points
                 int rankStart = numTeams - position;
                 int rankEnd = numTeams - (position + tiedTeams.size() - 1);
-                
+
                 // Average the points for tied teams
                 double avgPoints = (rankStart + rankEnd) / 2.0;
-                
-                System.out.println("Stroke Ranking - Position " + (position + 1) + ": " + 
-                    tiedTeams.size() + " team(s) with score " + currentScore + 
-                    " get " + avgPoints + " points each");
+
+                System.out.println("Stroke Ranking - Position " + (position + 1) + ": " +
+                        tiedTeams.size() + " team(s) with score " + currentScore +
+                        " get " + avgPoints + " points each");
 
                 for (Long teamId : tiedTeams) {
                     teamRankings.put(teamId, avgPoints);
@@ -832,55 +846,60 @@ public class TeamGamePointsService {
      */
     private boolean isPlayerOnTeam(RoundTeam team, Long playerId) {
         return (team.getPlayer1Id() != null && team.getPlayer1Id().equals(playerId)) ||
-               (team.getPlayer2Id() != null && team.getPlayer2Id().equals(playerId)) ||
-               (team.getPlayer3Id() != null && team.getPlayer3Id().equals(playerId));
+                (team.getPlayer2Id() != null && team.getPlayer2Id().equals(playerId)) ||
+                (team.getPlayer3Id() != null && team.getPlayer3Id().equals(playerId));
     }
 
     /**
      * Validate that ALL teams in a round have complete scorecards for ALL 18 holes
      */
-    private void validateAllTeamsHaveCompleteScorecardsForAllHolesRoundLevel(List<RoundTeam> allTeams, List<Hole> holes) {
+    private void validateAllTeamsHaveCompleteScorecardsForAllHolesRoundLevel(List<RoundTeam> allTeams,
+            List<Hole> holes) {
         StringBuilder missingScores = new StringBuilder();
-        
+
         for (RoundTeam team : allTeams) {
             List<Long> teamPlayerIds = new java.util.ArrayList<>();
-            if (team.getPlayer1Id() != null) teamPlayerIds.add(team.getPlayer1Id());
-            if (team.getPlayer2Id() != null) teamPlayerIds.add(team.getPlayer2Id());
-            if (team.getPlayer3Id() != null) teamPlayerIds.add(team.getPlayer3Id());
-            
+            if (team.getPlayer1Id() != null)
+                teamPlayerIds.add(team.getPlayer1Id());
+            if (team.getPlayer2Id() != null)
+                teamPlayerIds.add(team.getPlayer2Id());
+            if (team.getPlayer3Id() != null)
+                teamPlayerIds.add(team.getPlayer3Id());
+
             if (teamPlayerIds.isEmpty()) {
                 throw new IllegalStateException("Team " + team.getId() + " has no players assigned");
             }
-            
+
             RoundTeeTime teeTime = team.getRoundTeeTime();
-            
+
             // Check each hole - team must have at least ONE player score for each hole
             for (Hole hole : holes) {
                 boolean hasScoreForHole = false;
-                
+
                 for (Long playerId : teamPlayerIds) {
                     Optional<PlayerScorecard> scorecard = playerScorecardRepository
-                        .findByRoundTeeTimeIdAndPlayerIdAndHoleId(teeTime.getId(), playerId, hole.getId());
-                    
+                            .findByRoundTeeTimeIdAndPlayerIdAndHoleId(teeTime.getId(), playerId, hole.getId());
+
                     if (scorecard.isPresent() && scorecard.get().getGrossScore() != null) {
                         hasScoreForHole = true;
                         break;
                     }
                 }
-                
+
                 if (!hasScoreForHole) {
                     missingScores.append("Team ")
-                        .append(team.getId())
-                        .append(" is missing score for hole ")
-                        .append(hole.getHoleNumber())
-                        .append(". ");
+                            .append(team.getId())
+                            .append(" is missing score for hole ")
+                            .append(hole.getHoleNumber())
+                            .append(". ");
                 }
             }
         }
-        
+
         if (missingScores.length() > 0) {
             throw new IllegalStateException("Cannot calculate team competition. " + missingScores.toString() +
-                    "All " + allTeams.size() + " teams must have complete scores for all 18 holes before team game points can be calculated.");
+                    "All " + allTeams.size()
+                    + " teams must have complete scores for all 18 holes before team game points can be calculated.");
         }
     }
 }

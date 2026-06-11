@@ -88,23 +88,9 @@ public class LeaderboardService {
                 // Individual game - handle separately
                 processIndividualGameRound(round, teeTimes, leaderboard);
             } else {
-                // Team-based game - original logic
-                // Step 1: Calculate individual tee-time points
-                for (RoundTeeTime teeTime : teeTimes) {
-                    List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId());
-
-                    // Group by player and sum game points for this tee time
-                    Map<Long, Integer> playerTeeTimeScores = scorecards.stream()
-                            .filter(sc -> sc.getGamePoints() != null)
-                            .collect(Collectors.groupingBy(
-                                    sc -> sc.getPlayer().getId(),
-                                    Collectors.summingInt(PlayerScorecard::getGamePoints)));
-
-                    // Rank players and assign tee-time points
-                    assignTeeTimePoints(playerTeeTimeScores, scorecards, leaderboard, round.getId());
-                }
-
-                // Step 2: Calculate inter-group team points
+                // Team-based game
+                // For team games, skip tee-time ranking - just use team points and vs_group
+                // Step 1: Calculate inter-group team points
                 assignTeamPoints(teeTimes, leaderboard, round.getId(), round);
             }
         }

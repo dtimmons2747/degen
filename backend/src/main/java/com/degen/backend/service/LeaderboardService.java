@@ -547,15 +547,12 @@ public class LeaderboardService {
                     .sorted(Map.Entry.comparingByValue())
                     .toList();
 
-            // vs_group points scale: 2.0, 1.5, 1.0, 0.5
-            double[] vsGroupPointsArray = { 2.0, 1.5, 1.0, 0.5 };
-
+            int numPlayers = sortedPlayers.size();
             int currentRank = 0;
-            int pointsIndex = 0;
 
-            System.out.println("  Tee Time " + teeTime.getId() + ": ranking " + sortedPlayers.size() + " players");
+            System.out.println("  Tee Time " + teeTime.getId() + ": ranking " + numPlayers + " players for vs-group");
 
-            while (currentRank < sortedPlayers.size() && pointsIndex < vsGroupPointsArray.length) {
+            while (currentRank < sortedPlayers.size()) {
                 // Find all players tied at current rank
                 Integer currentScore = sortedPlayers.get(currentRank).getValue();
                 List<Integer> tiedIndices = new ArrayList<>();
@@ -569,14 +566,11 @@ public class LeaderboardService {
                 }
 
                 // Calculate average points for tied players
-                double pointsSum = 0.0;
-                int pointsUsed = 0;
-                for (int i = 0; i < tiedIndices.size() && pointsIndex < vsGroupPointsArray.length; i++) {
-                    pointsSum += vsGroupPointsArray[pointsIndex];
-                    pointsIndex++;
-                    pointsUsed++;
-                }
-                double avgPoints = pointsSum / pointsUsed;
+                // Scale: 1st place gets numPlayers/2, last place gets 0.5
+                // This gives: 1st=2.0, 2nd=1.5, 3rd=1.0, 4th=0.5 for 4 players
+                double pointsForBest = (numPlayers - currentRank) / 2.0;
+                double pointsForWorst = (numPlayers - (currentRank + tiedIndices.size() - 1)) / 2.0;
+                double avgPoints = (pointsForBest + pointsForWorst) / 2.0;
 
                 System.out.println("    Rank " + (currentRank + 1) + ": " + tiedIndices.size() + " players with score "
                         + currentScore + ", assigning " + avgPoints + " points each");

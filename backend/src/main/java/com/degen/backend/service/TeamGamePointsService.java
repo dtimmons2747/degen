@@ -356,12 +356,12 @@ public class TeamGamePointsService {
                 List<PlayerScorecard> teamScorecardsForHole = new java.util.ArrayList<>();
 
                 for (Long playerId : teamPlayerIds) {
-                    Optional<PlayerScorecard> scorecard = playerScorecardRepository
+                    List<PlayerScorecard> scorecards = playerScorecardRepository
                             .findByRoundTeeTimeIdAndPlayerIdAndHoleId(team.getRoundTeeTime().getId(), playerId,
                                     hole.getId());
 
-                    if (scorecard.isPresent() && scorecard.get().getNetScore() != null) {
-                        teamScorecardsForHole.add(scorecard.get());
+                    if (!scorecards.isEmpty() && scorecards.get(0).getGrossScore() != null) {
+                        playerScorecardsForHole.add(scorecards.get(0));
                     }
                 }
 
@@ -650,12 +650,12 @@ public class TeamGamePointsService {
                 List<PlayerScorecard> teamScorecardsForHole = new java.util.ArrayList<>();
 
                 for (Long playerId : teamPlayerIds) {
-                    Optional<PlayerScorecard> scorecard = playerScorecardRepository
+                    List<PlayerScorecard> scorecards = playerScorecardRepository
                             .findByRoundTeeTimeIdAndPlayerIdAndHoleId(team.getRoundTeeTime().getId(), playerId,
                                     hole.getId());
 
-                    if (scorecard.isPresent() && scorecard.get().getNetScore() != null) {
-                        teamScorecardsForHole.add(scorecard.get());
+                    if (!scorecards.isEmpty() && scorecards.get(0).getNetScore() != null) {
+                        teamScorecardsForHole.add(scorecards.get(0));
                     }
                 }
 
@@ -880,10 +880,10 @@ public class TeamGamePointsService {
                 boolean hasScoreForHole = false;
 
                 for (Long playerId : teamPlayerIds) {
-                    Optional<PlayerScorecard> scorecard = playerScorecardRepository
+                    List<PlayerScorecard> scorecards = playerScorecardRepository
                             .findByRoundTeeTimeIdAndPlayerIdAndHoleId(teeTime.getId(), playerId, hole.getId());
 
-                    if (scorecard.isPresent() && scorecard.get().getGrossScore() != null) {
+                    if (!scorecards.isEmpty() && scorecards.get(0).getGrossScore() != null) {
                         hasScoreForHole = true;
                         break;
                     }

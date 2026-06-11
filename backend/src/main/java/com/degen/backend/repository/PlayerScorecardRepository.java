@@ -32,8 +32,9 @@ public interface PlayerScorecardRepository extends JpaRepository<PlayerScorecard
            "JOIN FETCH ps.roundTeeTime " +
            "LEFT JOIN FETCH ps.player " +
            "LEFT JOIN FETCH ps.hole " +
-           "WHERE ps.roundTeeTime.id = :roundTeeTimeId AND ps.player.id = :playerId AND ps.hole.id = :holeId")
-    Optional<PlayerScorecard> findByRoundTeeTimeIdAndPlayerIdAndHoleId(
+           "WHERE ps.roundTeeTime.id = :roundTeeTimeId AND ps.player.id = :playerId AND ps.hole.id = :holeId " +
+           "ORDER BY ps.id DESC")
+    List<PlayerScorecard> findByRoundTeeTimeIdAndPlayerIdAndHoleId(
         @Param("roundTeeTimeId") Long roundTeeTimeId,
         @Param("playerId") Long playerId,
         @Param("holeId") Long holeId

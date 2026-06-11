@@ -48,6 +48,9 @@ public class TeamGamePointsService {
                 throw new IllegalStateException("No course found for round " + tournamentRoundId);
             }
 
+            // Clear old game points before recalculating
+            clearOldGamePoints(tournamentRoundId);
+
             // Check if this is an Individual game
             if (tournamentRound.getGame() != null && tournamentRound.getGame().getId() == 4L) {
                 // Individual game - handle separately
@@ -900,6 +903,47 @@ public class TeamGamePointsService {
             throw new IllegalStateException("Cannot calculate team competition. " + missingScores.toString() +
                     "All " + allTeams.size()
                     + " teams must have complete scores for all 18 holes before team game points can be calculated.");
+        }
+    }
+
+    /**
+     * Clear old game points before recalculating
+     * Removes gamePoints from all TeamHoleScore and PlayerScorecard records for this round
+     */
+    private void clearOldGamePoints(Long tournamentRoundId) {
+        try {
+            // Get all tee times for this round
+            List<RoundTeeTime> roundTeeTimes = roundTeeTimeRepository.findAllByTournamentRoundId(tournamentRoundId);
+            
+            if (roundTeeTimes.isEmpty()) {
+                return;
+            }
+            
+            // Clear team hole scores
+            for (RoundTeeTime teeTime : roundTeeTimes) {
+                List<RoundTeam> teams = roundTeamRepository.findByRoundTeeTimeId(teeTime.getId());
+                for (RoundTeam team : teams) {
+                    List<TeamHoleScore> teamScores = teamHoleScoreRepository.findByRoundTeamId(team.getId());
+                    for (TeamHoleScore score : teamScores) {
+                        score.setGamePoints(null);
+                        teamHoleScoreRepository.save(score);
+                    }
+                }
+            }
+            
+            // Clear player scorecard game points
+            for (RoundTeeTime teeTime : roundTeeTimes) {
+                List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId());
+                for (PlayerScorecard scorecard : scorecards) {
+                    scorecard.setGamePoints(null);
+                    playerScorecardRepository.save(scorecard);
+                }
+            }
+            
+            System.out.println("Cleared old game points for round " + tournamentRoundId);
+        } catch (Exception e) {
+            System.out.println("Error clearing old game points: " + e.getMessage());
+            // Don't throw - continue with calculation
         }
     }
 }

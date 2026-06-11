@@ -62,7 +62,8 @@ public class PlayerScorecardService {
 
     public Optional<PlayerScorecard> getScorecardByRoundTeeTimeIdAndPlayerIdAndHoleId(Long roundTeeTimeId,
             Long playerId, Long holeId) {
-        return playerScorecardRepository.findByRoundTeeTimeIdAndPlayerIdAndHoleId(roundTeeTimeId, playerId, holeId);
+        List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeIdAndPlayerIdAndHoleId(roundTeeTimeId, playerId, holeId);
+        return scorecards.isEmpty() ? Optional.empty() : Optional.of(scorecards.get(0));
     }
 
     public long countScorecardsByRoundTeeTimeId(Long roundTeeTimeId) {
@@ -231,11 +232,11 @@ public class PlayerScorecardService {
         // Get all team members' net scores for this hole
         List<Integer> netScores = new java.util.ArrayList<>();
         for (Long playerId : teamPlayerIds) {
-            Optional<PlayerScorecard> playerScore = playerScorecardRepository.findByRoundTeeTimeIdAndPlayerIdAndHoleId(
+            List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeIdAndPlayerIdAndHoleId(
                     team.getRoundTeeTime().getId(), playerId, holeId);
-            if (playerScore.isPresent() && playerScore.get().getNetScore() != null) {
-                netScores.add(playerScore.get().getNetScore());
-                System.out.println("    Player " + playerId + " netScore: " + playerScore.get().getNetScore());
+            if (!scorecards.isEmpty() && scorecards.get(0).getNetScore() != null) {
+                netScores.add(scorecards.get(0).getNetScore());
+                System.out.println("    Player " + playerId + " netScore: " + scorecards.get(0).getNetScore());
             }
         }
 

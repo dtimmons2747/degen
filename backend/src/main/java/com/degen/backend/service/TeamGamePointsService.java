@@ -361,7 +361,7 @@ public class TeamGamePointsService {
                                     hole.getId());
 
                     if (!scorecards.isEmpty() && scorecards.get(0).getGrossScore() != null) {
-                        playerScorecardsForHole.add(scorecards.get(0));
+                        teamScorecardsForHole.add(scorecards.get(0));
                     }
                 }
 

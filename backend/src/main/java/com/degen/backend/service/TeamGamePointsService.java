@@ -908,17 +908,18 @@ public class TeamGamePointsService {
 
     /**
      * Clear old game points before recalculating
-     * Removes gamePoints from all TeamHoleScore and PlayerScorecard records for this round
+     * Removes gamePoints from all TeamHoleScore and PlayerScorecard records for
+     * this round
      */
     private void clearOldGamePoints(Long tournamentRoundId) {
         try {
             // Get all tee times for this round
             List<RoundTeeTime> roundTeeTimes = roundTeeTimeRepository.findAllByTournamentRoundId(tournamentRoundId);
-            
+
             if (roundTeeTimes.isEmpty()) {
                 return;
             }
-            
+
             // Clear team hole scores
             for (RoundTeeTime teeTime : roundTeeTimes) {
                 List<RoundTeam> teams = roundTeamRepository.findByRoundTeeTimeId(teeTime.getId());
@@ -930,7 +931,7 @@ public class TeamGamePointsService {
                     }
                 }
             }
-            
+
             // Clear player scorecard game points
             for (RoundTeeTime teeTime : roundTeeTimes) {
                 List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeId(teeTime.getId());
@@ -939,7 +940,7 @@ public class TeamGamePointsService {
                     playerScorecardRepository.save(scorecard);
                 }
             }
-            
+
             System.out.println("Cleared old game points for round " + tournamentRoundId);
         } catch (Exception e) {
             System.out.println("Error clearing old game points: " + e.getMessage());

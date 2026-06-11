@@ -441,14 +441,11 @@ public class LeaderboardService {
                 }
             } else {
                 System.out.println("  Using NINES ranking (gamePoints)");
-                // For Nines: use original logic with [3, 2, 1] points
-                // Points array: [3, 2, 1] for top 3 teams
-                int[] pointsArray = { 3, 2, 1 };
-
+                // For Nines/Stableford: points scale based on number of teams
+                // 1st place gets numTeams points, 2nd gets numTeams-1, etc. down to 1
                 int currentRank = 0;
-                int pointsIndex = 0;
 
-                while (currentRank < sortedTeams.size() && pointsIndex < pointsArray.length) {
+                while (currentRank < sortedTeams.size()) {
                     // Find all teams tied at current rank
                     Integer currentScore = sortedTeams.get(currentRank).getValue();
                     List<Integer> tiedIndices = new ArrayList<>();
@@ -462,22 +459,15 @@ public class LeaderboardService {
                     }
 
                     // Calculate average points for tied teams
-                    double pointsToAward = pointsArray[pointsIndex];
-                    if (tiedIndices.size() > 1) {
-                        // Average the points for this rank and next ones
-                        int pointsSum = 0;
-                        for (int i = 0; i < tiedIndices.size() && pointsIndex < pointsArray.length; i++) {
-                            pointsSum += pointsArray[pointsIndex];
-                            pointsIndex++;
-                        }
-                        pointsToAward = (double) pointsSum / tiedIndices.size();
-                    } else {
-                        pointsIndex++;
-                    }
+                    // Points for 1st place: numTeams
+                    // Points for last place: 1
+                    double pointsForBest = numTeams - currentRank;
+                    double pointsForWorst = numTeams - (currentRank + tiedIndices.size() - 1);
+                    double avgPoints = (pointsForBest + pointsForWorst) / 2.0;
 
                     System.out.println(
                             "    Rank " + (currentRank + 1) + ": " + tiedIndices.size() + " teams with gamePoints "
-                                    + currentScore + ", assigning " + pointsToAward + " points each");
+                                    + currentScore + ", assigning " + avgPoints + " points each");
 
                     // Award points to all players on the tied teams
                     for (int idx : tiedIndices) {
@@ -488,7 +478,7 @@ public class LeaderboardService {
                             for (Long playerId : playerIds) {
                                 LeaderboardEntryDto entry = leaderboard.computeIfAbsent(playerId,
                                         pId -> new LeaderboardEntryDto(pId, playerNames.get(pId)));
-                                entry.addRoundPoints(roundId, pointsToAward);
+                                entry.addRoundPoints(roundId, avgPoints);
                             }
                         }
                     }

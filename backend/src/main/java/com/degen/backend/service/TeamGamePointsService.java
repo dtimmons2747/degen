@@ -537,8 +537,8 @@ public class TeamGamePointsService {
      * -2 pts
      */
     private List<Integer> calculateStablefordGamePoints(List<TeamHoleScore> sortedByScore, Hole hole) {
-        // First, calculate raw Stableford points for each team based on their score vs
-        // par
+        // For Stableford, just calculate raw points per team for this hole (8/4/2/0/-2)
+        // Team ranking happens at the end in assignTeamPoints after summing all holes
         List<Integer> stablefordPoints = new ArrayList<>();
 
         for (TeamHoleScore teamScore : sortedByScore) {
@@ -567,60 +567,7 @@ public class TeamGamePointsService {
             stablefordPoints.add(pts);
         }
 
-        // Now rank teams by their Stableford points (highest to lowest)
-        // and distribute competitive ranking points with tie handling
-        List<Integer> rankingPoints = new ArrayList<>();
-        int numTeams = sortedByScore.size();
-
-        // Create list of (index, stablefordPoints) for ranking
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < numTeams; i++) {
-            indices.add(i);
-        }
-
-        // Sort indices by stableford points descending (better scores first)
-        indices.sort((i, j) -> Integer.compare(stablefordPoints.get(j), stablefordPoints.get(i)));
-
-        // Assign ranking points based on position, handling ties
-        int rank = 1;
-        for (int i = 0; i < numTeams;) {
-            // Find all teams tied at this rank
-            int currentScore = stablefordPoints.get(indices.get(i));
-            List<Integer> tiedIndices = new ArrayList<>();
-            tiedIndices.add(i);
-
-            while (i + tiedIndices.size() < numTeams &&
-                    stablefordPoints.get(indices.get(i + tiedIndices.size())).equals(currentScore)) {
-                tiedIndices.add(i + tiedIndices.size());
-            }
-
-            // Calculate average points for ties
-            // Sum points for all tied positions and divide by number of tied teams
-            // Example: 2 teams tied for 1st out of 6: (6 + 5) / 2 = 5.5
-            double startPoints = numTeams - rank + 1;
-            double endPoints = numTeams - rank - tiedIndices.size() + 2;
-            double avgPoints = (startPoints + endPoints) / 2.0;
-
-            // Assign to all tied teams
-            for (Integer idx : tiedIndices) {
-                rankingPoints.add((int) Math.round(avgPoints));
-            }
-
-            rank += tiedIndices.size();
-            i += tiedIndices.size();
-        }
-
-        // Create result list in original order
-        List<Integer> result = new ArrayList<>();
-        for (int i = 0; i < numTeams; i++) {
-            result.add(0);
-        }
-
-        for (int i = 0; i < numTeams; i++) {
-            result.set(indices.get(i), rankingPoints.get(i));
-        }
-
-        return result;
+        return stablefordPoints;
     }
 
     /**

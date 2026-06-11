@@ -62,7 +62,8 @@ public class PlayerScorecardService {
 
     public Optional<PlayerScorecard> getScorecardByRoundTeeTimeIdAndPlayerIdAndHoleId(Long roundTeeTimeId,
             Long playerId, Long holeId) {
-        List<PlayerScorecard> scorecards = playerScorecardRepository.findByRoundTeeTimeIdAndPlayerIdAndHoleId(roundTeeTimeId, playerId, holeId);
+        List<PlayerScorecard> scorecards = playerScorecardRepository
+                .findByRoundTeeTimeIdAndPlayerIdAndHoleId(roundTeeTimeId, playerId, holeId);
         return scorecards.isEmpty() ? Optional.empty() : Optional.of(scorecards.get(0));
     }
 
